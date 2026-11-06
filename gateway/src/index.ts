@@ -1,5 +1,6 @@
 import { cfg } from "./config.js";
 import { buildDeps, createApp } from "./app.js";
+import { startBaselineSync } from "./baselineSync.js";
 
 const deps = buildDeps();
 deps.pricing.refresh();
@@ -8,4 +9,5 @@ const app = createApp(deps);
 app.listen(cfg.port, () => {
   console.log(`headroom gateway on :${cfg.port} model=${cfg.model} network=hedera:${cfg.hederaNetwork} facilitator=${cfg.facilitatorUrl} hcs=${deps.hcs.enabled()}`);
 });
+startBaselineSync(deps.ledger, () => { try { deps.pricing.refresh(); } catch (e) { console.warn("pricing refresh:", (e as Error).message); } });
 setInterval(() => { try { deps.pricing.refresh(); } catch (e) { console.warn("pricing refresh:", (e as Error).message); } }, 60_000);
