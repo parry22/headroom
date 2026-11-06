@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Orchestrate a benchmark run on the GPU node.
 #   bench/run.sh smoke [RUN_ID]   # B,C ; N=4,16 ; 1 run      (~20 min)
-#   bench/run.sh full  [RUN_ID]   # A x1, B x3, C x3 ; N=2..32 (~2.7 h)
+#   bench/run.sh full  [RUN_ID]   # A x1, B x3, C x3 ; N=4..16 (~2.8 h)
 # Levels sized for a 24 GB GPU (RTX 4090, FP8 weights ~8.5 GB, ~11 GB KV). Override with LEVELS="...".
 set -euo pipefail
 MODE=${1:?smoke|full}
@@ -15,7 +15,7 @@ mkdir -p "$OUT"
 
 case "$MODE" in
   smoke) CONFIGS="B C"; LEVELS=${LEVELS:-"4 16"}; RUNS_A=1; RUNS_BC=1; WARM=60 ;;
-  full)  CONFIGS="A B C"; LEVELS=${LEVELS:-"2 4 8 16 24 32"}; RUNS_A=1; RUNS_BC=3; WARM=90 ;;
+  full)  CONFIGS="A B C"; LEVELS=${LEVELS:-"4 6 8 10 12 16"}; RUNS_A=1; RUNS_BC=3; WARM=90 ;;
   *) echo "mode must be smoke|full" >&2; exit 2 ;;
 esac
 SETTLE=${SETTLE:-45}; DURATION=${DURATION:-180}
@@ -40,7 +40,7 @@ for CFG in $CONFIGS; do
       if [ "$CFG" = C ] && [ -n "${LMCACHE_L2_PATH:-}" ]; then
         FREE=$(df -BG --output=avail "$LMCACHE_L2_PATH" | tail -1 | tr -dc 0-9)
         echo "$(date +%T) nvme free ${FREE}G" | tee -a "$OUT/run.log"
-        if [ "${FREE:-999}" -lt 150 ]; then
+        if [ "${FREE:-999}" -lt "${NVME_MIN_FREE_GB:-40}" ]; then
           echo "$(date +%T) nvme low, restarting node to drop L2" | tee -a "$OUT/run.log"
           "$ROOT/infra/stop-node.sh"; find "${LMCACHE_L2_PATH:?}" -mindepth 1 -delete; "$ROOT/infra/run-node.sh" C | tee -a "$OUT/run.log"
         fi

@@ -34,6 +34,8 @@ if [ "$CONNECTOR" = "lmcache_mp" ]; then
   : "${LMCACHE_L1_GB:?set LMCACHE_L1_GB in .env}"
   : "${LMCACHE_L2_PATH:?set LMCACHE_L2_PATH in .env}"
   mkdir -p "$LMCACHE_L2_PATH" && chmod 777 "$LMCACHE_L2_PATH"
+  # a new LMCache server does not index files left by the previous one; they only eat disk (filled a 200 GB disk on 2026-11-06)
+  find "${LMCACHE_L2_PATH:?}" -mindepth 1 -delete
   LMCACHE_ARGS=(server
     --host 0.0.0.0 --port "$LMCACHE_PORT"
     --http-host 0.0.0.0 --http-port "$LMCACHE_HTTP_PORT"

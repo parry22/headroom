@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""M5: 20 fixed greedy prompts. Config C output (after store, evict, reload) must equal config B output.
+"""M5: 20 fixed greedy prompts. Config C output (after store, evict, reload) must equal config B output on the same
+warm path: B runs each prompt twice and its second pass reuses the KV from GPU prefix cache, so both sides decode from
+stored KV rather than one side from a cold prefill (vLLM kernels are not batch-shape invariant, so cold vs warm can
+differ in late tokens on any config). The report also prints B cold-vs-warm as a control.
   python3 bench/correctness.py run --config B --out bench/results/correctness/B.json
   python3 bench/correctness.py run --config C --out bench/results/correctness/C.json --fillers 80
   python3 bench/correctness.py compare --b bench/results/correctness/B.json --c bench/results/correctness/C.json --diff bench/results/correctness/latest.diff
@@ -35,20 +38,27 @@ def run(a):
     with httpx.Client() as c:
         for pid, p in ps:            # pass 1: store (and the only pass for B)
             out[pid] = complete(c, p, a.max_tokens)
-        if a.config == "C":
+        if a.config == "B":
+            out = {"first_pass": out, "outputs": {pid: complete(c, p, a.max_tokens) for pid, p in ps}}   # warm, GPU prefix cache
+        elif a.config == "C":
             for i in range(a.fillers):   # evict from GPU KV and L1
                 complete(c, prefix + "\n\n" + salad(900_000 + i, words_for(16384, tpw)) + "\nFiller.", 1)
             out2 = {pid: complete(c, p, a.max_tokens) for pid, p in ps}   # pass 2: reload from L1/L2
             out = {"first_pass": out, "outputs": out2}
-        else:
-            out = {"outputs": out}
     out["config"] = a.config
     write_json(a.out, out)
     print(f"{a.config}: {len(ps)} prompts -> {a.out}")
 
+def mismatches(x: dict, y: dict) -> int:
+    return sum(1 for k in x if x[k] != y.get(k))
+
 def compare(a):
-    b = json.load(open(a.b))["outputs"]
-    c = json.load(open(a.c))["outputs"]
+    bj, cj = json.load(open(a.b)), json.load(open(a.c))
+    b, c = bj["outputs"], cj["outputs"]
+    if "first_pass" in bj:
+        print(f"control: B cold vs B warm: {mismatches(bj['first_pass'], b)} of {len(b)} differ")
+    if "first_pass" in cj:
+        print(f"control: C cold vs B cold: {mismatches(cj['first_pass'], bj.get('first_pass', b))} of {len(b)} differ")
     lines = []
     for k in sorted(b):
         if b[k] != c.get(k):
