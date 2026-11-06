@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 // Depth check D2: every text node containing a digit inside <main> must sit inside
-// <a class="num" href="..."> . Fetches DASHBOARD_URL (default http://localhost:3100).
-// Exit 1 and print offenders, or exit 0 and print "audit-links: 0 unlinked".
+// <a class="num" href="..."> . Fetches every page of DASHBOARD_URL (default http://localhost:3100).
+// Exit 1 and print offenders per page, or exit 0 and print "audit-links: 0 unlinked across N pages".
 
 const base = (process.env.DASHBOARD_URL || "http://localhost:3100").replace(/\/$/, "");
+// Keep in step with lib/nav.ts.
+const ROUTES = ["/", "/memory", "/payments", "/payments?view=batches", "/pricing"];
 
 const VOID = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"]);
 const SKIP = new Set(["script", "style", "template", "noscript"]);
@@ -72,23 +74,27 @@ export function audit(html) {
 }
 
 async function main() {
-  const url = `${base}/`;
-  let html;
-  try {
-    const res = await fetch(url, { headers: { accept: "text/html" } });
-    if (!res.ok) throw new Error(`http ${res.status}`);
-    html = await res.text();
-  } catch (e) {
-    console.error(`audit-links: cannot fetch ${url}: ${e.message}`);
-    process.exit(1);
+  let failed = 0;
+  for (const route of ROUTES) {
+    const url = `${base}${route}`;
+    let html;
+    try {
+      const res = await fetch(url, { headers: { accept: "text/html" } });
+      if (!res.ok) throw new Error(`http ${res.status}`);
+      html = await res.text();
+    } catch (e) {
+      console.error(`audit-links: cannot fetch ${url}: ${e.message}`);
+      process.exit(1);
+    }
+    const { ok, offenders } = audit(html);
+    if (!ok) {
+      failed += offenders.length;
+      console.error(`audit-links: ${route}: ${offenders.length} unlinked`);
+      for (const o of offenders) console.error(`  ${o.path}: "${o.text}"`);
+    }
   }
-  const { ok, offenders } = audit(html);
-  if (!ok) {
-    console.error(`audit-links: ${offenders.length} unlinked`);
-    for (const o of offenders) console.error(`  ${o.path}: "${o.text}"`);
-    process.exit(1);
-  }
-  console.log("audit-links: 0 unlinked");
+  if (failed) process.exit(1);
+  console.log(`audit-links: 0 unlinked across ${ROUTES.length} pages`);
 }
 
 if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split("/").pop())) main();

@@ -1,4 +1,4 @@
-import { links } from "./env";
+import { links, SNAPSHOT } from "./env";
 
 export interface Pricing {
   model?: string; currency?: string; units?: string;
@@ -31,6 +31,8 @@ async function getJson<T>(url: string): Promise<Fetched<T>> {
 }
 
 export async function readGateway(): Promise<{ pricing: Fetched<Pricing>; health: Fetched<Health> }> {
+  // The hosted snapshot has no gateway to call.
+  if (SNAPSHOT) return { pricing: { ok: false, error: "snapshot", url: links.pricing }, health: { ok: false, error: "snapshot", url: links.health } };
   const [pricing, health] = await Promise.all([getJson<Pricing>(links.pricing), getJson<Health>(links.health)]);
   return { pricing, health };
 }

@@ -35,6 +35,7 @@ export async function GET(req: Request) {
     generated_at: Date.now(),
     ledger: path.basename(data.path),
     fixture: data.fixture,
+    snapshot: data.snapshot,
     team_wallets_excluded: env.teamWallets.length,
     units: UNITS_NOTE,
     sql: { paid: SQL.paid, external: SQL.external(env.teamWallets.length), cost: SQL.cost, batches: SQL.batches, receipts: SQL.receipts, batch_list: SQL.batchList },

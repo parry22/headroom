@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import { DatabaseSync } from "node:sqlite";
-import { env, FIXTURE_LEDGER } from "./env";
+import { env, FIXTURE_LEDGER, SNAPSHOT_LEDGER } from "./env";
 import { buildFixtureLedger } from "../fixtures/ledger-fixture.mjs";
 
 export interface UsageRow {
@@ -59,13 +59,15 @@ export const UNITS_NOTE = "actual_cost/baseline_cost/price/amount are micro-USDC
 export interface LedgerData {
   path: string;
   fixture: boolean;
+  snapshot: boolean;
   summary: Summary;
   receipts: UsageRow[];
   batches: BatchRow[];
 }
 
-function resolveLedger(): { path: string; fixture: boolean } | null {
+function resolveLedger(): { path: string; fixture: boolean; snapshot?: boolean } | null {
   if (fs.existsSync(/*turbopackIgnore: true*/ env.ledgerPath)) return { path: env.ledgerPath, fixture: false };
+  if (fs.existsSync(SNAPSHOT_LEDGER)) return { path: SNAPSHOT_LEDGER, fixture: false, snapshot: true };
   if (!env.fixtures) return null;
   if (!fs.existsSync(FIXTURE_LEDGER)) {
     try { buildFixtureLedger(FIXTURE_LEDGER); }
@@ -106,7 +108,7 @@ export function readLedger(limit = 50): LedgerData | null {
       baseline_per_1m_tokens_usd: numOrNull(cost.baseline_usd_per_1m_tokens),
       batches: num(bt.n), batches_posted: num(bt.posted), latest_record_at: numOrNull(paid.latest),
     };
-    return { path: r.path, fixture: r.fixture, summary, receipts, batches };
+    return { path: r.path, fixture: r.fixture, snapshot: Boolean(r.snapshot), summary, receipts, batches };
   } catch {
     return null;
   } finally {

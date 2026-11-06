@@ -40,6 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# public snapshot built by `pnpm snapshot` (deploy artifact; the ledger stays out of git)
+/snapshot/
+
 # sample ledger built by `pnpm fixtures`
 /fixtures/ledger.db
 /fixtures/ledger.db-*

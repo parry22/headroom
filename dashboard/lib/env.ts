@@ -22,11 +22,21 @@ export const env = {
 };
 
 export const FIXTURE_BENCH = path.join(process.cwd(), "fixtures", "latest.json");
+
+/**
+ * Public snapshot: `pnpm snapshot` copies the real ledger and bench report into ./snapshot so the dashboard can be
+ * hosted away from the demo machine. Used only when the real files are absent (the hosted build); locally the real
+ * files always win.
+ */
+export const SNAPSHOT_LEDGER = path.join(process.cwd(), "snapshot", "ledger.db");
+export const SNAPSHOT_BENCH = path.join(process.cwd(), "snapshot", "latest.json");
+export const SNAPSHOT = !fs.existsSync(/*turbopackIgnore: true*/ env.ledgerPath) && fs.existsSync(SNAPSHOT_LEDGER);
 export const FIXTURE_LEDGER = path.join(process.cwd(), "fixtures", "ledger.db");
 
 /** Real bench report if present; the fixture only when DASHBOARD_FIXTURES=1; else null. */
 export function benchPath(): string | null {
   if (fs.existsSync(/*turbopackIgnore: true*/ env.benchLatest)) return env.benchLatest;
+  if (fs.existsSync(SNAPSHOT_BENCH)) return SNAPSHOT_BENCH;
   if (env.fixtures && fs.existsSync(FIXTURE_BENCH)) return FIXTURE_BENCH;
   return null;
 }
@@ -39,7 +49,8 @@ export const links = {
   arcAddress: (addr: string) => `https://explorer.testnet.arc.io/address/${encodeURIComponent(addr)}`,
   pricing: `${env.gatewayUrl}/pricing`,
   health: `${env.gatewayUrl}/health`,
-  benchLatest: `${env.gatewayUrl}/bench/latest`,
+  // The snapshot has no reachable gateway, so its bench link points at the committed file instead.
+  benchLatest: SNAPSHOT ? `${env.repoUrl}/blob/main/bench/results/latest.json` : `${env.gatewayUrl}/bench/latest`,
   ledgerSummary: "/api/ledger-summary",
   record: (id: string) => `/api/ledger-summary?request_id=${encodeURIComponent(id)}`,
   batch: (id: string) => `/api/ledger-summary?batch_id=${encodeURIComponent(id)}`,

@@ -1,8 +1,22 @@
 # Headroom dashboard
 
 Public dashboard for Headroom (ETHGlobal Mumbai). Next.js App Router, TypeScript, plain CSS,
-server-rendered on every request. One page, five sections in demo order: memory proof,
-live paid calls, tab on Arc, baseline and pricing, demand.
+server-rendered on every request. Visual language follows the Concours product (near-black canvas,
+hairline cards, one peach-to-indigo gradient for Headroom's own figures, Geist type).
+
+## Pages
+
+A read-only proof board: one sticky top bar with four tabs, the gateway status, and an Evidence
+menu of raw sources. The page list lives in `lib/nav.ts`.
+
+| Route | What it answers |
+| --- | --- |
+| `/` | The thesis as three linked claims (more sessions per GPU, lower cost per token, paid and settled on chain), a live feed of the newest paid calls, and who is paying |
+| `/memory` | Capacity per config, gains, the capacity curve; per-level tables, tier hits, KV bytes and the formula check are folded below |
+| `/payments` | Counts, how mode A (per request on Hedera) and mode B (tab on Arc) work, and one table switched between receipts (filterable by mode) and batches |
+| `/pricing` | Baseline, cost and price ladder, baseline source, node throughput, unit rates, ledger cost against baseline |
+
+Overview and Payments refresh themselves while open.
 
 ## Run
 
@@ -12,7 +26,7 @@ pnpm install
 pnpm dev          # http://localhost:3100 (next dev -p 3100)
 pnpm build
 pnpm start        # production server on port 3100
-pnpm audit-links  # D2 check against the running server (see below)
+pnpm audit-links  # D2 check of every page against the running server (see below)
 ```
 
 Node 22.13 or newer is required: the ledger is read with the built-in `node:sqlite`
@@ -54,9 +68,24 @@ from a constant in the dashboard code; the only arithmetic is unit presentation
 (micro-USDC to USDC, fraction to percent, epoch to ISO time). Prose avoids digits so the audit
 stays simple ("two" not "2", no dates outside anchors).
 
-`scripts/audit-links.mjs` fetches the page, walks `<main>`, and fails with exit code 1 listing
-every text node that contains a digit but has no `<a class="num" href>` ancestor. It prints
-`audit-links: 0 unlinked` and exits 0 when clean.
+`scripts/audit-links.mjs` fetches every page and table view (its route list mirrors `lib/nav.ts`), walks `<main>`,
+and fails with exit code 1 listing every text node that contains a digit but has no
+`<a class="num" href>` ancestor. It prints `audit-links: 0 unlinked across 5 pages` and exits 0
+when clean. Evidence links open in a new tab so the reader keeps their place.
+
+## Public snapshot deploy
+
+Live at https://headroom-dashboard.vercel.app (Vercel project `headroom-dashboard`). The hosted copy cannot
+reach the ledger or the gateway on the demo machine, so it serves a read-only snapshot:
+
+```sh
+pnpm snapshot                      # copies ../gateway/ledger.db and ../bench/results/latest.json into ./snapshot (gitignored)
+vercel build --prod && vercel deploy --prebuilt --prod
+```
+
+`lib/env.ts` uses `./snapshot` only when the real ledger is absent, so local runs are unchanged. In snapshot mode the
+top bar shows a "snapshot" badge, a banner gives the newest record time, gateway links are hidden and the live price
+ladder is replaced by a notice. Re-run both commands to refresh the snapshot.
 
 ## Fixtures
 

@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start -p 3100",
     "fixtures": "node fixtures/make-ledger.mjs",
+    "snapshot": "node scripts/snapshot.mjs",
     "audit-links": "node scripts/audit-links.mjs"
   },
   "dependencies": {
