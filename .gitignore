@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+.next/
+__pycache__/
+*.pyc
+.venv/
+bench/results/**/tmp/
+*.log
+!docs/fresh-run.log
+gateway/ledger.db
+gateway/ledger.db-*
+.DS_Store
