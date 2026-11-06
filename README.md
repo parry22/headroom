@@ -73,6 +73,21 @@ RESULT l1_hits=282880 l2_hits=40448 bit_exact=True -> PASS
 
 Pinned versions: `infra/VERSIONS.md`. Node bring-up and endpoints: [infra/README.md](infra/README.md).
 
+## Benchmark (smoke run, 2026-11-06 15:16 UTC, same 4090, same model, seed 1337)
+
+`make bench-smoke` ran configs B (FP8 KV, no offload) and C (FP8 KV + LMCache DRAM/NVMe) at N = 4 and 16 agent sessions, one run each. Raw CSVs, metrics and report: `bench/results/20261106-1516-smoke/`; the gateway and dashboard read `bench/results/latest.json`.
+
+| config | N | turns | p95 TTFT hit ms | p95 TTFT miss ms | tok/s | KV reuse | L1 hit tokens | L2 hit tokens | preemptions | GPU KV max |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| B | 4 | 38 | 954 | 835 | 5,423 | 0.84 | n/a | n/a | 0 | 45% |
+| B | 16 | 68 | 21,852 | 1,284 | 9,664 | 0.26 | n/a | n/a | 3 | 98% |
+| C | 4 | 38 | 859 | 878 | 5,402 | 0.84 | 1,220,352 | 2,048 | 0 | 49% |
+| C | 16 | 111 | 5,195 | 5,650 | 16,524 | 0.84 | 3,202,304 | 75,520 | 1 | 100% |
+
+What this shows and does not show: at N = 16 config B runs out of HBM (KV 98%, reuse drops to 0.26, p95 TTFT 21.9 s) while config C keeps reuse at 0.84 from DRAM and NVMe and serves 1.7x the tokens per second with zero errors; but C's p95 TTFT at 16 (5.2 s) is above the 1.5 s hit target, and the smoke has no level between 4 and 16, so the capacity point is N = 4 for both and the reported gain is 1.0x. M1 (DRAM and NVMe hits above zero, GPU KV plateaus at 100%) and M6 (measured 65,520 bytes per token vs 65,536 from the formula, 0.02%) pass; M2 needs the full sweep (`make bench`, levels 2 to 32, 3 runs) which has not been run.
+
+Correctness (`make correctness`, 20 greedy prompts, `bench/results/correctness/`): config C store-then-reload is bit-exact within C (Spike A, 3 of 3 probes), but C's outputs equal B's on only 5 of 20 prompts (`latest.diff`). The PRD bar M5 (C equals B exactly) fails; the divergence comes from different batching and kernel paths between the two engine configurations, not from the offload altering KV.
+
 ## Layout
 
 | Dir | What |
