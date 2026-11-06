@@ -50,7 +50,7 @@ Tab mode (Arc): deposit USDC into the escrow, register a session key, send reque
 
 ## Settled transactions
 
-Every entry below is a real testnet transaction. The CRE simulation log is added when that gate passes.
+Every entry below is a real testnet transaction. The CRE simulation log is in `docs/evidence/2026-11-06/`.
 
 **Hedera x402 (Spike B, 2026-11-06).** Real x402 v2 `exact` payments in HTS USDC (`0.0.429274`) from the demo agent `0.0.11334561` to the operator `0.0.11334469`, verified and settled by the Blocky402 testnet facilitator (fee payer `0.0.7162784`), with `paymentFlow: upfront`. In this spike inference came from a local fake vLLM (no GPU yet); the payment path has no mocks. Replaying a used payment returns `402 payment_replayed`.
 
@@ -79,7 +79,7 @@ Every entry below is a real testnet transaction. The CRE simulation log is added
 - `make reconcile`: PASS, `2100000 == 2100000` (`docs/evidence/2026-11-06/reconcile-1793955730860.json`)
 - S5 on chain: `postBatch(amount=10, baselineAmount=9)` reverts with `AboveBaseline()` (`0xc88db978`)
 
-**Price baseline (D1), manual relay.** Live Vast.ai on-demand medians (H100 SXM $3.668/h, H200 $4.002/h) written with `setBaseline` by the operator, labelled `source: manual-relay` (`cre login` still pending, so no CRE run yet): https://explorer.testnet.arc.io/tx/0x91ecefa098134ed6add2d025cae75b6ead93012b9da88dd39d135c185a5638d3, https://explorer.testnet.arc.io/tx/0x09eea0bda3ba8c4396cb219999d52d4cef02f1445eda7162661bda2651c69500
+**Price baseline (D1), Chainlink CRE.** `cre workflow simulate price-baseline --target staging-settings` (2026-11-06 17:44 IST): cron trigger, Vast.ai fetch on every node, consensus median H100 $3.4053/h (8 offers), H200 $3.9956/h (18 offers), dry-run `writeReport` to the escrow. The simulator uses a MockForwarder, so the operator relayed the consensus values with `setBaseline`, labelled `cre_run_id = cre-sim:22926f0036f6f2c9` (log: `docs/evidence/2026-11-06/cre-sim-1793967257.txt`): https://explorer.testnet.arc.io/tx/0xea1ba3edb1397309b071461590165aafe14de83f48cf90cc451373c612891b7c, https://explorer.testnet.arc.io/tx/0x93f325877e41fadb302f12941b2967943382ea79c515502fac16d8e7380ce784. An earlier manual relay of the same Vast.ai query (14:22 IST): https://explorer.testnet.arc.io/tx/0x91ecefa098134ed6add2d025cae75b6ead93012b9da88dd39d135c185a5638d3
 
 **Arc testnet funding.** Operator `0x3F3A94169113A84fd54D257c018c62cFBc30D0EB` and demo buyer `0xBfa851839FDE3F1A21de800b196139337c519625`, 20 USDC each from faucet.circle.com.
 

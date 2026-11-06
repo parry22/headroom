@@ -61,8 +61,8 @@ const configSchema = z.object({
   consumerAddress: z.string().regex(/^0x[0-9a-fA-F]{40}$/),
   gasLimit: z.string(),
   httpTimeout: z.string(),
-  vastBundlesUrl: z.string().url(),
-  runpodGraphqlUrl: z.string().url(),
+  vastBundlesUrl: z.string().regex(/^https?:\/\/\S+$/, "http(s) url"),
+  runpodGraphqlUrl: z.string().regex(/^https?:\/\/\S+$/, "http(s) url"),
   gpus: z.object({
     h100: gpuSourceSchema,
     h200: gpuSourceSchema,

@@ -1,7 +1,7 @@
 {
   "schedule": "0 */15 * * * *",
   "chainSelectorName": "arc-testnet",
-  "consumerAddress": "0x0000000000000000000000000000000000000000",
+  "consumerAddress": "0xfa7b11252defd7ce61d271f2cbfc8eab7a5acb6f",
   "gasLimit": "500000",
   "httpTimeout": "8s",
   "vastBundlesUrl": "https://console.vast.ai/api/v0/bundles/",

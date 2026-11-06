@@ -123,3 +123,5 @@ Still human-blocked: GPU + `HF_TOKEN` (G1, M1–M7, real-inference P4), `cre log
 
 ~14:45 IST: the Arc judges confirmed any CLI deploy to Arc counts; Arc Studio is not required. The escrow moved to `contracts/src/HeadroomEscrow.sol` and is the submission contract (S1 passes); `STUDIO-PROMPT.md` is now `contracts/ESCROW-SPEC.md`, `deploy-reference.ts` is `deploy-escrow.ts`. Sections 1–8 above still describe the Studio plan; this note supersedes them.
 
+~17:45 IST: `cre login` done by the human. `cre workflow simulate price-baseline` passes after one fix: zod `z.string().url()` fails inside the CRE WASM runtime (no `URL` global), replaced by a regex. `consumerAddress` now points at the escrow. Consensus H100 3405333 e6, H200 3995556 e6; relayed with `signer/src/set-baseline.ts --log` as `cre-sim:22926f0036f6f2c9` (on-chain `baseline("H200")` = 3995556 @ 1793967300). Account has no deploy access, so a live DON run is out of scope. The baseline goes stale after `BASELINE_STALE_SECONDS`: re-run simulate + relay before each demo.
+

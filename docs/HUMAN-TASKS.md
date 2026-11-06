@@ -7,7 +7,7 @@ Each unblocks a spike. Agent work continues in parallel on gateway, bench, signe
 What is left for the human, shortest first:
 - ~~Hedera keys~~ done; Spike B passed 2026-11-06 11:55 (P1, P5, P6; links in README). HCS topic `0.0.11335247`.
 - ~~Arc escrow~~ done: `contracts/src/HeadroomEscrow.sol` deployed from the CLI at `0xfa7b…cb6f`; S1–S5 pass (judges confirmed Studio is optional).
-- `cre login` (browser). Then the agent runs the simulation. Until then the baseline is a manual relay of live Vast.ai medians (`source: manual-relay`), stale after 1 h.
+- ~~`cre login`~~ done; CRE simulation passed 2026-11-06 17:44 IST and its baseline is relayed on Arc (README). Deploy access is not enabled on the account, so the workflow runs as simulate + operator relay.
 - Tasks 1–3 (GPU, HF token, node).
 
 | # | Task | Unblocks | Done when |
