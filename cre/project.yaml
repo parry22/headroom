@@ -1,0 +1,23 @@
+# ==========================================================================
+# CRE PROJECT SETTINGS FILE (Headroom)
+# ==========================================================================
+# Project-wide settings shared by every workflow under cre/.
+# Each target defines the RPC endpoints the simulator / DON uses.
+#
+# Chain names must match the CRE chain-selector registry
+# (see https://docs.chain.link/cre/supported-networks-ts).
+# "arc-testnet" = Arc Testnet, chain selector 3034092155422581607, chainId 5042002.
+# RPC https://rpc.testnet.arc.network verified live on 2026-11-06 (eth_chainId -> 0x4cef52).
+#
+# RPC URLs may use ${ENV_VAR} interpolation if you switch to a keyed provider.
+# ==========================================================================
+staging-settings:
+  rpcs:
+    - chain-name: arc-testnet
+      url: https://rpc.testnet.arc.network
+
+# ==========================================================================
+production-settings:
+  rpcs:
+    - chain-name: arc-testnet
+      url: https://rpc.testnet.arc.network

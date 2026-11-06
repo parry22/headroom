@@ -1,0 +1,32 @@
+{
+  "name": "headroom-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "audit-prices": "tsx scripts/audit-prices.ts",
+    "caps-test": "tsx scripts/caps-test.ts",
+    "replay-test": "tsx scripts/replay-test.ts",
+    "hcs-create-topic": "tsx scripts/hcs-create-topic.ts"
+  },
+  "dependencies": {
+    "@hiero-ledger/sdk": "2.90.1",
+    "@x402/core": "2.30.0",
+    "@x402/fetch": "2.30.0",
+    "@x402/hedera": "2.30.0",
+    "dotenv": "^16.4.5",
+    "express": "^5.1.0",
+    "viem": "^2.57.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}

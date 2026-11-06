@@ -1,0 +1,24 @@
+# ==========================================================================
+# CRE WORKFLOW SETTINGS FILE — price-baseline
+# ==========================================================================
+# Workflow-specific settings per target. Values here override project.yaml.
+# Run from the project root (cre/):
+#   cre workflow simulate price-baseline --target staging-settings
+# ==========================================================================
+staging-settings:
+  user-workflow:
+    workflow-name: "headroom-price-baseline-staging"
+    # deployment-registry: "private"   # uncomment to deploy to the Chainlink-hosted private registry (no gas)
+  workflow-artifacts:
+    workflow-path: "./main.ts"
+    config-path: "./config.staging.json"
+    secrets-path: ""
+
+# ==========================================================================
+production-settings:
+  user-workflow:
+    workflow-name: "headroom-price-baseline-production"
+  workflow-artifacts:
+    workflow-path: "./main.ts"
+    config-path: "./config.production.json"
+    secrets-path: ""

@@ -1,0 +1,33 @@
+{
+  "schedule": "0 */15 * * * *",
+  "chainSelectorName": "arc-testnet",
+  "consumerAddress": "0x0000000000000000000000000000000000000000",
+  "gasLimit": "500000",
+  "httpTimeout": "8s",
+  "vastBundlesUrl": "https://console.vast.ai/api/v0/bundles/",
+  "runpodGraphqlUrl": "https://api.runpod.io/graphql",
+  "gpus": {
+    "h100": {
+      "gpuType": "H100",
+      "vastQuery": {
+        "gpu_name": { "eq": "H100 SXM" },
+        "rentable": { "eq": true },
+        "num_gpus": { "eq": 1 },
+        "type": "on-demand",
+        "limit": 50
+      },
+      "runpodGpuId": "NVIDIA H100 80GB HBM3"
+    },
+    "h200": {
+      "gpuType": "H200",
+      "vastQuery": {
+        "gpu_name": { "in": ["H200", "H200 NVL"] },
+        "rentable": { "eq": true },
+        "num_gpus": { "eq": 1 },
+        "type": "on-demand",
+        "limit": 50
+      },
+      "runpodGpuId": "NVIDIA H200"
+    }
+  }
+}
