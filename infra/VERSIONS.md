@@ -4,7 +4,7 @@
 | --- | --- | --- |
 | Docker image | `lmcache/vllm-openai:v0.5.6` (LMCache 0.5.6, built 2026-10-16) | hub.docker.com/r/lmcache/vllm-openai |
 | LMCache | 0.5.6 | pypi.org/project/lmcache |
-| vLLM | FILL AFTER SPIKE A: `docker run --rm --entrypoint pip lmcache/vllm-openai:v0.5.6 show vllm` (expected 0.31.0; the image installs vLLM unpinned at build time) | github.com/LMCache/LMCache/blob/v0.5.6/docker/Dockerfile |
+| vLLM | 0.31.0 (from `infra/engine-info.sh` on the 4090, 2026-11-06) | github.com/LMCache/LMCache/blob/v0.5.6/docker/Dockerfile |
 | Model | `RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8` (ungated FP8 weights of Llama 3.1 8B Instruct, compressed-tensors, 9.1 GB; 32 layers, 8 KV heads, head dim 128, Llama 3.1 Community License; config checked 2026-11-06) | huggingface.co/RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8 |
 | Node GPU | RTX 4090 24 GB (Ada, sm_89), host driver CUDA ≥ 13.0 | Vast.ai |
 | CUDA | image is CUDA 13.0 | LMCache installation page |

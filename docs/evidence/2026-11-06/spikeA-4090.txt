@@ -1,0 +1,42 @@
+== start 2026-11-06T14:53:31Z
+config=C kv_dtype=fp8 connector=lmcache_mp model=RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8 runtime=process image=lmcache/vllm-openai:v0.5.6
+vllm ready
+run-node exit=0
+== first pass (store) ==
+probe0: prompt_tokens=16915 cached=0 1.7s
+probe1: prompt_tokens=16904 cached=3376 1.5s
+probe2: prompt_tokens=16862 cached=3376 1.5s
+== 80 fillers (evict GPU KV and L1) ==
+  10/80 14s
+  20/80 28s
+  30/80 41s
+  40/80 55s
+  50/80 69s
+  60/80 83s
+  70/80 97s
+  80/80 110s
+== second pass (reload) ==
+probe0: cached=16896 0.4s bit_exact=True
+probe1: cached=16896 0.4s bit_exact=True
+probe2: cached=16640 0.4s bit_exact=True
+== lmcache deltas ==
+lmcache_mp_l1_memory_usage_bytes: 2868903936 -> 31859933184
+lmcache_mp_l2_usage_bytes: 2868903936 -> 73383542784
+lmcache_mp_lookup_hit_l1_keys_total: 26 -> 1105
+lmcache_mp_lookup_hit_l1_tokens_total: 6656 -> 282880
+lmcache_mp_lookup_hit_l2_keys_total: 0 -> 158
+lmcache_mp_lookup_hit_l2_tokens_total: 0 -> 40448
+lmcache_mp_lookup_hit_tokens_total: 6656 -> 323328
+== vllm ==
+vllm:external_prefix_cache_hits_created: 1793977712
+vllm:external_prefix_cache_hits_total: 40272
+vllm:num_preemptions_created: 1793977712
+vllm:num_preemptions_total: 0
+vllm:prefix_cache_hits_created: 1793977712
+vllm:prefix_cache_hits_total: 287408
+
+RESULT l1_hits=282880 l2_hits=40448 bit_exact=True -> PASS
+smoke exit=0
+{"kv_cache_gib":10.8,"kv_cache_tokens":176928,"vllm_version":"0.31.0","lmcache_version":"0.5.6"}
+engine-info exit=0
+== done 2026-11-06T15:10:35Z
