@@ -1,69 +1,57 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import { readBench } from "@/lib/bench";
+import { env, FIXTURE_BENCH, links } from "@/lib/env";
+import { readGateway } from "@/lib/gateway";
+import { readLedger } from "@/lib/ledger";
+import { DemandSection } from "./components/DemandSection";
+import { MemorySection } from "./components/MemorySection";
+import { Tag } from "./components/Num";
+import { PaidSection } from "./components/PaidSection";
+import { PricingSection } from "./components/PricingSection";
+import { TabSection } from "./components/TabSection";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const [bench, ledger, gw] = await Promise.all([
+    Promise.resolve(readBench()),
+    Promise.resolve(readLedger(50)),
+    readGateway(),
+  ]);
+  const benchFixture = bench?.source === FIXTURE_BENCH;
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>
-            To get started, edit the{" "}
-            <code className={styles.code}>page.tsx</code> file.
-          </h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    <>
+      <header>
+        <h1>Headroom</h1>
+        <p className="thesis">
+          Inference priced by memory headroom: a tiered KV cache lets one GPU hold more live sessions, and every request pays for what it
+          used, settled on chain, with every number on this page linked to its evidence.
+        </p>
+        <nav>
+          <a href={env.repoUrl}>repository</a>
+          <a href={links.pricing}>pricing</a>
+          <a href={links.health}>health</a>
+          <a href={links.benchLatest}>bench JSON</a>
+          <a href={links.ledgerSummary}>ledger summary</a>
+          {env.hcsTopicId && <a href={links.hashscanTopic(env.hcsTopicId)}>HCS topic</a>}
+          {env.arcEscrowAddress && <a href={links.arcAddress(env.arcEscrowAddress)}>Arc escrow</a>}
+          {env.arcStudioUrl && <a href={env.arcStudioUrl}>Arc Studio</a>}
+          {gw.health.ok ? <Tag kind="ok">gateway online</Tag> : <Tag kind="warn">gateway offline</Tag>}
+        </nav>
+      </header>
+      <main>
+        <MemorySection bench={bench} fixture={benchFixture} />
+        <PaidSection ledger={ledger} />
+        <TabSection ledger={ledger} />
+        <PricingSection pricing={gw.pricing} health={gw.health} ledger={ledger} />
+        <DemandSection ledger={ledger} />
       </main>
-    </div>
+      <footer>
+        <p className="muted">
+          Rule: no number on this page is typed by hand. Each one is a link to the bench file, transaction or gateway endpoint it came from.
+          Missing data shows as “no data yet”.
+        </p>
+      </footer>
+    </>
   );
 }

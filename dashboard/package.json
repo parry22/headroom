@@ -1,11 +1,14 @@
 {
-  "name": "dashboard",
+  "name": "headroom-dashboard",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3100",
     "build": "next build",
-    "start": "next start"
+    "start": "next start -p 3100",
+    "fixtures": "node fixtures/make-ledger.mjs",
+    "audit-links": "node scripts/audit-links.mjs"
   },
   "dependencies": {
     "next": "16.4.5",
@@ -13,10 +16,13 @@
     "react-dom": "19.3.0"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@types/node": "^22.10.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=22.13"
   },
   "packageManager": "pnpm@12.18.0"
 }

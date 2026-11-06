@@ -1,0 +1,31 @@
+{
+  "dir": "bench/results/sample-run",
+  "bars": { "ttft_hit_ms": 1500.0, "ttft_miss_ms": 6000.0 },
+  "capacity": { "B": 16, "C": 48 },
+  "gains": { "n_c_over_n_b": 3.0, "n_b_over_n_a": null, "runs_per_config": { "B": 1, "C": 1 } },
+  "levels": [
+    {
+      "config": "B", "run": "r1", "level": 16, "turns": 320, "errors": 0,
+      "ttft_p50_hit_ms": 410.2, "ttft_p95_hit_ms": 1180.5, "ttft_p95_miss_ms": 4210.0,
+      "tokens_per_s": 2210.4, "kv_reuse_rate": 0.612, "u_mean": 0.41, "u_p50": 0.4,
+      "l1_hits_delta": 0, "l2_hits_delta": 0, "external_prefix_hits_delta": 0,
+      "preemptions_delta": 0, "kv_usage_max": 0.93, "pass": true
+    },
+    {
+      "config": "C", "run": "r1", "level": 48, "turns": 960, "errors": 0,
+      "ttft_p50_hit_ms": 520.8, "ttft_p95_hit_ms": 1390.1, "ttft_p95_miss_ms": 5120.3,
+      "tokens_per_s": 5820.7, "kv_reuse_rate": 0.874, "u_mean": 0.39, "u_p50": 0.38,
+      "l1_hits_delta": 1412, "l2_hits_delta": 388, "external_prefix_hits_delta": 1800,
+      "preemptions_delta": 0, "kv_usage_max": 0.97, "pass": true
+    }
+  ],
+  "m1": {
+    "c_levels_with_l1_and_l2_hits": [48],
+    "c_kv_usage_max_by_level": { "48": 0.97 }
+  },
+  "m6": {
+    "B": { "formula_bytes": 65536, "measured_bytes": 66150.4, "delta_pct": 0.94, "kv_cache_tokens": 1245184, "vllm_version": "0.11.0", "lmcache_version": "0.3.5" },
+    "C": { "formula_bytes": 65536, "measured_bytes": 66150.4, "delta_pct": 0.94, "kv_cache_tokens": 1245184, "vllm_version": "0.11.0", "lmcache_version": "0.3.5" }
+  },
+  "m7": { "s_hbm_sessions": 33.8, "s_dram_sessions": 82.1, "u_at_capacity": 0.39, "n_max_formula": 86.7, "n_c_measured": 48 }
+}
