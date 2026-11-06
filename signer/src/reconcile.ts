@@ -8,7 +8,31 @@ import fs from "node:fs";
 if (!ESCROW) { console.error("ARC_ESCROW_ADDRESS not set"); process.exit(2); }
 const ledger = new Ledger(path.resolve(REPO_ROOT, process.env.LEDGER_PATH ?? "./gateway/ledger.db"));
 const latest = await publicClient.getBlockNumber();
-const logs = await publicClient.getContractEvents({ address: ESCROW, abi: escrowAbi, fromBlock: DEPLOY_BLOCK, toBlock: latest });
+/** Arc RPC rejects wide eth_getLogs ranges ("requested range too large"), so scan in windows of at most LOG_CHUNK blocks;
+ *  on a range error halve the window and retry that range. Results are concatenated in block order. */
+const LOG_CHUNK = BigInt(process.env.ARC_LOG_CHUNK ?? "5000");
+const MAX_RANGE_RETRIES = 8;
+const isRangeError = (e: unknown) => /range too large|exceeds|too many|block range|limit/i.test(String((e as any)?.details ?? (e as any)?.message ?? e));
+type EscrowLog = Awaited<ReturnType<typeof publicClient.getContractEvents<typeof escrowAbi>>>;
+async function scanLogs(from: bigint, to: bigint) {
+  const out: EscrowLog = [];
+  let windows = 0, retries = 0, chunk = LOG_CHUNK;
+  for (let start = from; start <= to; ) {
+    const end = start + chunk - 1n < to ? start + chunk - 1n : to;
+    try {
+      out.push(...await publicClient.getContractEvents({ address: ESCROW, abi: escrowAbi, fromBlock: start, toBlock: end }));
+      windows++;
+      start = end + 1n;
+    } catch (e) {
+      if (!isRangeError(e) || chunk <= 1n || ++retries > MAX_RANGE_RETRIES) throw e;
+      chunk /= 2n;
+      console.error(`reconcile: range ${start}..${end} rejected, retrying with chunk ${chunk}`);
+    }
+  }
+  return { logs: out, windows };
+}
+const { logs, windows } = await scanLogs(DEPLOY_BLOCK, latest);
+console.error(`reconcile: scanned blocks ${DEPLOY_BLOCK}..${latest} in ${windows} windows (chunk ${LOG_CHUNK}), ${logs.length} events`);
 const buyers = new Set<string>();
 const ev: Record<string, bigint> = {};
 const add = (k: string, v: bigint) => { ev[k] = (ev[k] ?? 0n) + v; };
