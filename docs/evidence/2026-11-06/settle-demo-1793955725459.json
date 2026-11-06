@@ -1,0 +1,69 @@
+{
+  "escrow": "0xfa7b11252defd7ce61d271f2cbfc8eab7a5acb6f",
+  "buyer": "0xBfa851839FDE3F1A21de800b196139337c519625",
+  "operator": "0x3F3A94169113A84fd54D257c018c62cFBc30D0EB",
+  "steps": [
+    {
+      "name": "preflight",
+      "receiptSigner": "0x9ED0B08Cf7D36061cA487b540174C75B6BC619d6",
+      "domain": {
+        "name": "Headroom",
+        "version": "1",
+        "chainId": 5042002,
+        "verifyingContract": "0xfa7b11252defd7ce61d271f2cbfc8eab7a5acb6f"
+      }
+    },
+    {
+      "name": "postBond",
+      "amount": "200000",
+      "tx": "https://explorer.testnet.arc.io/tx/0x9bbd587ad57cf49071f996e24f3c9f318cf2c2b4f89664360922a0fb60b653b4"
+    },
+    {
+      "name": "deposit",
+      "amount": "2000000",
+      "tx": "https://explorer.testnet.arc.io/tx/0x618b126848cf44905c8ee8b5e25db943c3acb51c366cfc46bd6a8854a9f5fad0"
+    },
+    {
+      "name": "registerSessionKey",
+      "key": "0xBfa851839FDE3F1A21de800b196139337c519625",
+      "expiry": "1794041492",
+      "tx": "https://explorer.testnet.arc.io/tx/0xf729ad5a1eac33ee5ed6cbe92d6b28c4dc8198d860e9be13c873422ef2d0d348"
+    },
+    {
+      "name": "tab_requests",
+      "count": 20,
+      "first": "52810b03-202a-4bc2-ab51-10a6dd8dffb2"
+    },
+    {
+      "name": "postBatch_wrong",
+      "batchId": "0",
+      "tx": "https://explorer.testnet.arc.io/tx/0xb4cb88105f9ec585a538fdf44bae607dbc986ea524e6591f0664afb5a7b9854a",
+      "tamperedIndex": 0
+    },
+    {
+      "name": "postBatch_clean",
+      "batchId": "1",
+      "tx": "https://explorer.testnet.arc.io/tx/0xea7f6cac5b54510da1ec768cb11a662a32742d89e00ef515c7f710dcc032f683"
+    },
+    {
+      "name": "receipt_digest",
+      "digest": "0x910aeb6ce2d58df85213646ca743ed5dc47fbe601afa0e609421a18270be7077",
+      "checkedOnChain": true
+    },
+    {
+      "name": "challenge",
+      "batchId": "0",
+      "tx": "https://explorer.testnet.arc.io/tx/0x47f61d189681b5fe547b728193c4890c2d15fdb68121736adeab3edffe6cd271",
+      "logs": 2
+    },
+    {
+      "name": "waiting_window",
+      "seconds": 600
+    },
+    {
+      "name": "release",
+      "batchId": "1",
+      "tx": "https://explorer.testnet.arc.io/tx/0x8ffe44187871da8591b9f2c5bb1d5a9c496160356475dd400e12698c5fdef097"
+    }
+  ]
+}

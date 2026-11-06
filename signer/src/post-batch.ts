@@ -26,7 +26,7 @@ export async function postBatch(buyer: string, opts: { tamperRequestId?: string;
   const tokens = records.reduce((s, r) => s + r.prompt_tokens + r.completion_tokens, 0);
   const baselineAmount = records.reduce((s, r) => s + BigInt(r.baseline_cost ?? r.price), 0n);
   const w = wallet(process.env.ARC_OPERATOR_KEY!);
-  const { hash, rcpt, url } = await send(w, "postBatch", [buyer, root, records.length, BigInt(tokens), amount, baselineAmount < amount ? amount : baselineAmount]);
+  const { hash, rcpt, url } = await send(w, "postBatch", [buyer, root, records.length, BigInt(tokens), amount, tamperedLeaf && baselineAmount < amount ? amount : baselineAmount]);   // only the deliberately wrong demo batch may exceed baseline; honest batches keep the S5 cap
   let batchId = "";
   for (const log of rcpt.logs) {
     try { const ev = decodeEventLog({ abi: escrowAbi, data: log.data, topics: log.topics }); if (ev.eventName === "BatchPosted") batchId = String((ev.args as any).batchId); } catch { /* other logs */ }

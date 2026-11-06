@@ -1,0 +1,43 @@
+{
+  "ts": "2026-11-06T09:02:10.854Z",
+  "escrow": "0xfa7b11252defd7ce61d271f2cbfc8eab7a5acb6f",
+  "block": "71004409",
+  "buyers": [
+    {
+      "buyer": "0xbfa851839fde3f1a21de800b196139337c519625",
+      "deposited": "2000000",
+      "penalties": "100000",
+      "released": "140",
+      "withdrawn": "0",
+      "free": "2099860",
+      "locked": "0",
+      "refunded_events": "155",
+      "identity": "2100000 == 2100000",
+      "views_match_events": true,
+      "pass": true
+    }
+  ],
+  "batches": [
+    {
+      "batch_id": "0",
+      "ledger_root": "0xb6ed188cb9d945221a2184237163bc1f5ea5aec7fce3fbabfc4c7e375b34ce83",
+      "onchain_root": "0xb6ed188cb9d945221a2184237163bc1f5ea5aec7fce3fbabfc4c7e375b34ce83",
+      "ledger_amount": 155,
+      "onchain_amount": "155",
+      "status": "challenged",
+      "tx": "0xb4cb88105f9ec585a538fdf44bae607dbc986ea524e6591f0664afb5a7b9854a",
+      "pass": true
+    },
+    {
+      "batch_id": "1",
+      "ledger_root": "0x6257ec6f782a8f7c5561afc5a56ad601321afa871173fc935e259397e5b879cc",
+      "onchain_root": "0x6257ec6f782a8f7c5561afc5a56ad601321afa871173fc935e259397e5b879cc",
+      "ledger_amount": 140,
+      "onchain_amount": "140",
+      "status": "released",
+      "tx": "0xea7f6cac5b54510da1ec768cb11a662a32742d89e00ef515c7f710dcc032f683",
+      "pass": true
+    }
+  ],
+  "pass": true
+}

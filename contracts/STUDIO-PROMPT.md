@@ -1,6 +1,6 @@
 # Arc Studio brief: HeadroomEscrow (human task 5)
 
-Paste this into Arc Studio (Smart Contract mode). Studio must write, test and deploy the contract; this repo only holds the interface it must satisfy (`contracts/IHeadroomEscrow.sol`) and the integration code. After deployment, run `arc-studio pull` or copy the sources, ABI and address into `contracts/` and set `ARC_ESCROW_ADDRESS` and `ARC_STUDIO_PROJECT_URL` in `.env`.
+Paste this into Arc Studio (Smart Contract mode). A reference implementation that passes the test list below is in `contracts/reference/HeadroomEscrow.sol` (12 Foundry tests, deployed to Arc testnet for the pipeline rehearsal); use it only to compare behaviour, the submission contract must be created in Studio. Studio must write, test and deploy the contract; this repo only holds the interface it must satisfy (`contracts/IHeadroomEscrow.sol`) and the integration code. After deployment, run `arc-studio pull` or copy the sources, ABI and address into `contracts/` and set `ARC_ESCROW_ADDRESS` and `ARC_STUDIO_PROJECT_URL` in `.env`.
 
 ---
 

@@ -1,0 +1,1247 @@
+[
+ {
+  "type": "constructor",
+  "inputs": [
+   {
+    "name": "operator_",
+    "type": "address",
+    "internalType": "address"
+   },
+   {
+    "name": "receiptSigner_",
+    "type": "address",
+    "internalType": "address"
+   },
+   {
+    "name": "forwarder_",
+    "type": "address",
+    "internalType": "address"
+   },
+   {
+    "name": "disputeWindow_",
+    "type": "uint64",
+    "internalType": "uint64"
+   },
+   {
+    "name": "challengePenalty_",
+    "type": "uint256",
+    "internalType": "uint256"
+   }
+  ],
+  "stateMutability": "nonpayable"
+ },
+ {
+  "type": "function",
+  "name": "USDC",
+  "inputs": [],
+  "outputs": [
+   {
+    "name": "",
+    "type": "address",
+    "internalType": "address"
+   }
+  ],
+  "stateMutability": "view"
+ },
+ {
+  "type": "function",
+  "name": "baseline",
+  "inputs": [
+   {
+    "name": "gpuType",
+    "type": "string",
+    "internalType": "string"
+   }
+  ],
+  "outputs": [
+   {
+    "name": "usdPerHourE6",
+    "type": "uint256",
+    "internalType": "uint256"
+   },
+   {
+    "name": "timestamp",
+    "type": "uint256",
+    "internalType": "uint256"
+   }
+  ],
+  "stateMutability": "view"
+ },
+ {
+  "type": "function",
+  "name": "batchCount",
+  "inputs": [],
+  "outputs": [
+   {
+    "name": "",
+    "type": "uint256",
+    "internalType": "uint256"
+   }
+  ],
+  "stateMutability": "view"
+ },
+ {
+  "type": "function",
+  "name": "batches",
+  "inputs": [
+   {
+    "name": "batchId",
+    "type": "uint256",
+    "internalType": "uint256"
+   }
+  ],
+  "outputs": [
+   {
+    "name": "",
+    "type": "tuple",
+    "internalType": "struct IHeadroomEscrow.Batch",
+    "components": [
+     {
+      "name": "buyer",
+      "type": "address",
+      "internalType": "address"
+     },
+     {
+      "name": "root",
+      "type": "bytes32",
+      "internalType": "bytes32"
+     },
+     {
+      "name": "count",
+      "type": "uint32",
+      "internalType": "uint32"
+     },
+     {
+      "name": "tokens",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "amount",
+      "type": "uint256",
+      "internalType": "uint256"
+     },
+     {
+      "name": "baselineAmount",
+      "type": "uint256",
+      "internalType": "uint256"
+     },
+     {
+      "name": "windowEnds",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "status",
+      "type": "uint8",
+      "internalType": "enum IHeadroomEscrow.BatchStatus"
+     }
+    ]
+   }
+  ],
+  "stateMutability": "view"
+ },
+ {
+  "type": "function",
+  "name": "challenge",
+  "inputs": [
+   {
+    "name": "batchId",
+    "type": "uint256",
+    "internalType": "uint256"
+   },
+   {
+    "name": "batchRecord",
+    "type": "tuple",
+    "internalType": "struct IHeadroomEscrow.Record",
+    "components": [
+     {
+      "name": "requestId",
+      "type": "bytes32",
+      "internalType": "bytes32"
+     },
+     {
+      "name": "buyer",
+      "type": "string",
+      "internalType": "string"
+     },
+     {
+      "name": "promptTokens",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "cachedTokens",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "completionTokens",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "rIn",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "rCached",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "rOut",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "price",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "timestamp",
+      "type": "uint64",
+      "internalType": "uint64"
+     }
+    ]
+   },
+   {
+    "name": "proof",
+    "type": "bytes32[]",
+    "internalType": "bytes32[]"
+   },
+   {
+    "name": "receipt",
+    "type": "tuple",
+    "internalType": "struct IHeadroomEscrow.Record",
+    "components": [
+     {
+      "name": "requestId",
+      "type": "bytes32",
+      "internalType": "bytes32"
+     },
+     {
+      "name": "buyer",
+      "type": "string",
+      "internalType": "string"
+     },
+     {
+      "name": "promptTokens",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "cachedTokens",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "completionTokens",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "rIn",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "rCached",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "rOut",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "price",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "timestamp",
+      "type": "uint64",
+      "internalType": "uint64"
+     }
+    ]
+   },
+   {
+    "name": "receiptSig",
+    "type": "bytes",
+    "internalType": "bytes"
+   }
+  ],
+  "outputs": [],
+  "stateMutability": "nonpayable"
+ },
+ {
+  "type": "function",
+  "name": "challengePenalty",
+  "inputs": [],
+  "outputs": [
+   {
+    "name": "",
+    "type": "uint256",
+    "internalType": "uint256"
+   }
+  ],
+  "stateMutability": "view"
+ },
+ {
+  "type": "function",
+  "name": "deposit",
+  "inputs": [
+   {
+    "name": "amount",
+    "type": "uint256",
+    "internalType": "uint256"
+   }
+  ],
+  "outputs": [],
+  "stateMutability": "nonpayable"
+ },
+ {
+  "type": "function",
+  "name": "deposited",
+  "inputs": [
+   {
+    "name": "",
+    "type": "address",
+    "internalType": "address"
+   }
+  ],
+  "outputs": [
+   {
+    "name": "",
+    "type": "uint256",
+    "internalType": "uint256"
+   }
+  ],
+  "stateMutability": "view"
+ },
+ {
+  "type": "function",
+  "name": "disputeWindow",
+  "inputs": [],
+  "outputs": [
+   {
+    "name": "",
+    "type": "uint64",
+    "internalType": "uint64"
+   }
+  ],
+  "stateMutability": "view"
+ },
+ {
+  "type": "function",
+  "name": "forwarder",
+  "inputs": [],
+  "outputs": [
+   {
+    "name": "",
+    "type": "address",
+    "internalType": "address"
+   }
+  ],
+  "stateMutability": "view"
+ },
+ {
+  "type": "function",
+  "name": "free",
+  "inputs": [
+   {
+    "name": "",
+    "type": "address",
+    "internalType": "address"
+   }
+  ],
+  "outputs": [
+   {
+    "name": "",
+    "type": "uint256",
+    "internalType": "uint256"
+   }
+  ],
+  "stateMutability": "view"
+ },
+ {
+  "type": "function",
+  "name": "leafOf",
+  "inputs": [
+   {
+    "name": "r",
+    "type": "tuple",
+    "internalType": "struct IHeadroomEscrow.Record",
+    "components": [
+     {
+      "name": "requestId",
+      "type": "bytes32",
+      "internalType": "bytes32"
+     },
+     {
+      "name": "buyer",
+      "type": "string",
+      "internalType": "string"
+     },
+     {
+      "name": "promptTokens",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "cachedTokens",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "completionTokens",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "rIn",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "rCached",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "rOut",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "price",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "timestamp",
+      "type": "uint64",
+      "internalType": "uint64"
+     }
+    ]
+   }
+  ],
+  "outputs": [
+   {
+    "name": "",
+    "type": "bytes32",
+    "internalType": "bytes32"
+   }
+  ],
+  "stateMutability": "pure"
+ },
+ {
+  "type": "function",
+  "name": "locked",
+  "inputs": [
+   {
+    "name": "",
+    "type": "address",
+    "internalType": "address"
+   }
+  ],
+  "outputs": [
+   {
+    "name": "",
+    "type": "uint256",
+    "internalType": "uint256"
+   }
+  ],
+  "stateMutability": "view"
+ },
+ {
+  "type": "function",
+  "name": "onReport",
+  "inputs": [
+   {
+    "name": "",
+    "type": "bytes",
+    "internalType": "bytes"
+   },
+   {
+    "name": "report",
+    "type": "bytes",
+    "internalType": "bytes"
+   }
+  ],
+  "outputs": [],
+  "stateMutability": "nonpayable"
+ },
+ {
+  "type": "function",
+  "name": "operator",
+  "inputs": [],
+  "outputs": [
+   {
+    "name": "",
+    "type": "address",
+    "internalType": "address"
+   }
+  ],
+  "stateMutability": "view"
+ },
+ {
+  "type": "function",
+  "name": "operatorBalance",
+  "inputs": [],
+  "outputs": [
+   {
+    "name": "",
+    "type": "uint256",
+    "internalType": "uint256"
+   }
+  ],
+  "stateMutability": "view"
+ },
+ {
+  "type": "function",
+  "name": "operatorBond",
+  "inputs": [],
+  "outputs": [
+   {
+    "name": "",
+    "type": "uint256",
+    "internalType": "uint256"
+   }
+  ],
+  "stateMutability": "view"
+ },
+ {
+  "type": "function",
+  "name": "penaltiesReceived",
+  "inputs": [
+   {
+    "name": "",
+    "type": "address",
+    "internalType": "address"
+   }
+  ],
+  "outputs": [
+   {
+    "name": "",
+    "type": "uint256",
+    "internalType": "uint256"
+   }
+  ],
+  "stateMutability": "view"
+ },
+ {
+  "type": "function",
+  "name": "postBatch",
+  "inputs": [
+   {
+    "name": "buyer",
+    "type": "address",
+    "internalType": "address"
+   },
+   {
+    "name": "root",
+    "type": "bytes32",
+    "internalType": "bytes32"
+   },
+   {
+    "name": "count",
+    "type": "uint32",
+    "internalType": "uint32"
+   },
+   {
+    "name": "tokens",
+    "type": "uint64",
+    "internalType": "uint64"
+   },
+   {
+    "name": "amount",
+    "type": "uint256",
+    "internalType": "uint256"
+   },
+   {
+    "name": "baselineAmount",
+    "type": "uint256",
+    "internalType": "uint256"
+   }
+  ],
+  "outputs": [
+   {
+    "name": "batchId",
+    "type": "uint256",
+    "internalType": "uint256"
+   }
+  ],
+  "stateMutability": "nonpayable"
+ },
+ {
+  "type": "function",
+  "name": "postBond",
+  "inputs": [
+   {
+    "name": "amount",
+    "type": "uint256",
+    "internalType": "uint256"
+   }
+  ],
+  "outputs": [],
+  "stateMutability": "nonpayable"
+ },
+ {
+  "type": "function",
+  "name": "receiptDigest",
+  "inputs": [
+   {
+    "name": "r",
+    "type": "tuple",
+    "internalType": "struct IHeadroomEscrow.Record",
+    "components": [
+     {
+      "name": "requestId",
+      "type": "bytes32",
+      "internalType": "bytes32"
+     },
+     {
+      "name": "buyer",
+      "type": "string",
+      "internalType": "string"
+     },
+     {
+      "name": "promptTokens",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "cachedTokens",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "completionTokens",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "rIn",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "rCached",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "rOut",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "price",
+      "type": "uint64",
+      "internalType": "uint64"
+     },
+     {
+      "name": "timestamp",
+      "type": "uint64",
+      "internalType": "uint64"
+     }
+    ]
+   }
+  ],
+  "outputs": [
+   {
+    "name": "",
+    "type": "bytes32",
+    "internalType": "bytes32"
+   }
+  ],
+  "stateMutability": "view"
+ },
+ {
+  "type": "function",
+  "name": "receiptSigner",
+  "inputs": [],
+  "outputs": [
+   {
+    "name": "",
+    "type": "address",
+    "internalType": "address"
+   }
+  ],
+  "stateMutability": "view"
+ },
+ {
+  "type": "function",
+  "name": "registerSessionKey",
+  "inputs": [
+   {
+    "name": "key",
+    "type": "address",
+    "internalType": "address"
+   },
+   {
+    "name": "expiry",
+    "type": "uint64",
+    "internalType": "uint64"
+   }
+  ],
+  "outputs": [],
+  "stateMutability": "nonpayable"
+ },
+ {
+  "type": "function",
+  "name": "release",
+  "inputs": [
+   {
+    "name": "batchId",
+    "type": "uint256",
+    "internalType": "uint256"
+   }
+  ],
+  "outputs": [],
+  "stateMutability": "nonpayable"
+ },
+ {
+  "type": "function",
+  "name": "released",
+  "inputs": [
+   {
+    "name": "",
+    "type": "address",
+    "internalType": "address"
+   }
+  ],
+  "outputs": [
+   {
+    "name": "",
+    "type": "uint256",
+    "internalType": "uint256"
+   }
+  ],
+  "stateMutability": "view"
+ },
+ {
+  "type": "function",
+  "name": "sessionKeyExpiry",
+  "inputs": [
+   {
+    "name": "",
+    "type": "address",
+    "internalType": "address"
+   },
+   {
+    "name": "",
+    "type": "address",
+    "internalType": "address"
+   }
+  ],
+  "outputs": [
+   {
+    "name": "",
+    "type": "uint64",
+    "internalType": "uint64"
+   }
+  ],
+  "stateMutability": "view"
+ },
+ {
+  "type": "function",
+  "name": "setBaseline",
+  "inputs": [
+   {
+    "name": "gpuType",
+    "type": "string",
+    "internalType": "string"
+   },
+   {
+    "name": "usdPerHourE6",
+    "type": "uint256",
+    "internalType": "uint256"
+   },
+   {
+    "name": "timestamp",
+    "type": "uint256",
+    "internalType": "uint256"
+   }
+  ],
+  "outputs": [],
+  "stateMutability": "nonpayable"
+ },
+ {
+  "type": "function",
+  "name": "setForwarder",
+  "inputs": [
+   {
+    "name": "f",
+    "type": "address",
+    "internalType": "address"
+   }
+  ],
+  "outputs": [],
+  "stateMutability": "nonpayable"
+ },
+ {
+  "type": "function",
+  "name": "setReceiptSigner",
+  "inputs": [
+   {
+    "name": "s",
+    "type": "address",
+    "internalType": "address"
+   }
+  ],
+  "outputs": [],
+  "stateMutability": "nonpayable"
+ },
+ {
+  "type": "function",
+  "name": "supportsInterface",
+  "inputs": [
+   {
+    "name": "id",
+    "type": "bytes4",
+    "internalType": "bytes4"
+   }
+  ],
+  "outputs": [
+   {
+    "name": "",
+    "type": "bool",
+    "internalType": "bool"
+   }
+  ],
+  "stateMutability": "pure"
+ },
+ {
+  "type": "function",
+  "name": "usdc",
+  "inputs": [],
+  "outputs": [
+   {
+    "name": "",
+    "type": "address",
+    "internalType": "address"
+   }
+  ],
+  "stateMutability": "pure"
+ },
+ {
+  "type": "function",
+  "name": "withdraw",
+  "inputs": [
+   {
+    "name": "amount",
+    "type": "uint256",
+    "internalType": "uint256"
+   }
+  ],
+  "outputs": [],
+  "stateMutability": "nonpayable"
+ },
+ {
+  "type": "function",
+  "name": "withdrawOperator",
+  "inputs": [
+   {
+    "name": "amount",
+    "type": "uint256",
+    "internalType": "uint256"
+   }
+  ],
+  "outputs": [],
+  "stateMutability": "nonpayable"
+ },
+ {
+  "type": "function",
+  "name": "withdrawn",
+  "inputs": [
+   {
+    "name": "",
+    "type": "address",
+    "internalType": "address"
+   }
+  ],
+  "outputs": [
+   {
+    "name": "",
+    "type": "uint256",
+    "internalType": "uint256"
+   }
+  ],
+  "stateMutability": "view"
+ },
+ {
+  "type": "event",
+  "name": "BaselineSet",
+  "inputs": [
+   {
+    "name": "gpuType",
+    "type": "string",
+    "indexed": false,
+    "internalType": "string"
+   },
+   {
+    "name": "usdPerHourE6",
+    "type": "uint256",
+    "indexed": false,
+    "internalType": "uint256"
+   },
+   {
+    "name": "timestamp",
+    "type": "uint256",
+    "indexed": false,
+    "internalType": "uint256"
+   },
+   {
+    "name": "by",
+    "type": "address",
+    "indexed": false,
+    "internalType": "address"
+   }
+  ],
+  "anonymous": false
+ },
+ {
+  "type": "event",
+  "name": "BatchPosted",
+  "inputs": [
+   {
+    "name": "batchId",
+    "type": "uint256",
+    "indexed": true,
+    "internalType": "uint256"
+   },
+   {
+    "name": "buyer",
+    "type": "address",
+    "indexed": true,
+    "internalType": "address"
+   },
+   {
+    "name": "root",
+    "type": "bytes32",
+    "indexed": false,
+    "internalType": "bytes32"
+   },
+   {
+    "name": "count",
+    "type": "uint32",
+    "indexed": false,
+    "internalType": "uint32"
+   },
+   {
+    "name": "tokens",
+    "type": "uint64",
+    "indexed": false,
+    "internalType": "uint64"
+   },
+   {
+    "name": "amount",
+    "type": "uint256",
+    "indexed": false,
+    "internalType": "uint256"
+   },
+   {
+    "name": "baselineAmount",
+    "type": "uint256",
+    "indexed": false,
+    "internalType": "uint256"
+   },
+   {
+    "name": "windowEnds",
+    "type": "uint64",
+    "indexed": false,
+    "internalType": "uint64"
+   }
+  ],
+  "anonymous": false
+ },
+ {
+  "type": "event",
+  "name": "BondPosted",
+  "inputs": [
+   {
+    "name": "operator",
+    "type": "address",
+    "indexed": true,
+    "internalType": "address"
+   },
+   {
+    "name": "amount",
+    "type": "uint256",
+    "indexed": false,
+    "internalType": "uint256"
+   }
+  ],
+  "anonymous": false
+ },
+ {
+  "type": "event",
+  "name": "Challenged",
+  "inputs": [
+   {
+    "name": "batchId",
+    "type": "uint256",
+    "indexed": true,
+    "internalType": "uint256"
+   },
+   {
+    "name": "buyer",
+    "type": "address",
+    "indexed": true,
+    "internalType": "address"
+   },
+   {
+    "name": "leaf",
+    "type": "bytes32",
+    "indexed": false,
+    "internalType": "bytes32"
+   },
+   {
+    "name": "refund",
+    "type": "uint256",
+    "indexed": false,
+    "internalType": "uint256"
+   },
+   {
+    "name": "penalty",
+    "type": "uint256",
+    "indexed": false,
+    "internalType": "uint256"
+   }
+  ],
+  "anonymous": false
+ },
+ {
+  "type": "event",
+  "name": "Deposited",
+  "inputs": [
+   {
+    "name": "buyer",
+    "type": "address",
+    "indexed": true,
+    "internalType": "address"
+   },
+   {
+    "name": "amount",
+    "type": "uint256",
+    "indexed": false,
+    "internalType": "uint256"
+   }
+  ],
+  "anonymous": false
+ },
+ {
+  "type": "event",
+  "name": "OperatorWithdrawn",
+  "inputs": [
+   {
+    "name": "operator",
+    "type": "address",
+    "indexed": true,
+    "internalType": "address"
+   },
+   {
+    "name": "amount",
+    "type": "uint256",
+    "indexed": false,
+    "internalType": "uint256"
+   }
+  ],
+  "anonymous": false
+ },
+ {
+  "type": "event",
+  "name": "Refunded",
+  "inputs": [
+   {
+    "name": "batchId",
+    "type": "uint256",
+    "indexed": true,
+    "internalType": "uint256"
+   },
+   {
+    "name": "buyer",
+    "type": "address",
+    "indexed": true,
+    "internalType": "address"
+   },
+   {
+    "name": "amount",
+    "type": "uint256",
+    "indexed": false,
+    "internalType": "uint256"
+   }
+  ],
+  "anonymous": false
+ },
+ {
+  "type": "event",
+  "name": "Released",
+  "inputs": [
+   {
+    "name": "batchId",
+    "type": "uint256",
+    "indexed": true,
+    "internalType": "uint256"
+   },
+   {
+    "name": "operator",
+    "type": "address",
+    "indexed": true,
+    "internalType": "address"
+   },
+   {
+    "name": "amount",
+    "type": "uint256",
+    "indexed": false,
+    "internalType": "uint256"
+   }
+  ],
+  "anonymous": false
+ },
+ {
+  "type": "event",
+  "name": "SessionKeyRegistered",
+  "inputs": [
+   {
+    "name": "buyer",
+    "type": "address",
+    "indexed": true,
+    "internalType": "address"
+   },
+   {
+    "name": "key",
+    "type": "address",
+    "indexed": true,
+    "internalType": "address"
+   },
+   {
+    "name": "expiry",
+    "type": "uint64",
+    "indexed": false,
+    "internalType": "uint64"
+   }
+  ],
+  "anonymous": false
+ },
+ {
+  "type": "event",
+  "name": "Withdrawn",
+  "inputs": [
+   {
+    "name": "buyer",
+    "type": "address",
+    "indexed": true,
+    "internalType": "address"
+   },
+   {
+    "name": "amount",
+    "type": "uint256",
+    "indexed": false,
+    "internalType": "uint256"
+   }
+  ],
+  "anonymous": false
+ },
+ {
+  "type": "error",
+  "name": "AboveBaseline",
+  "inputs": []
+ },
+ {
+  "type": "error",
+  "name": "BadProof",
+  "inputs": []
+ },
+ {
+  "type": "error",
+  "name": "BadReceiptSigner",
+  "inputs": []
+ },
+ {
+  "type": "error",
+  "name": "BondTooLow",
+  "inputs": []
+ },
+ {
+  "type": "error",
+  "name": "ExpiryTooFar",
+  "inputs": []
+ },
+ {
+  "type": "error",
+  "name": "InsufficientFree",
+  "inputs": []
+ },
+ {
+  "type": "error",
+  "name": "InsufficientOperatorBalance",
+  "inputs": []
+ },
+ {
+  "type": "error",
+  "name": "NotBuyer",
+  "inputs": []
+ },
+ {
+  "type": "error",
+  "name": "NotForwarder",
+  "inputs": []
+ },
+ {
+  "type": "error",
+  "name": "NotMispriced",
+  "inputs": []
+ },
+ {
+  "type": "error",
+  "name": "NotOpen",
+  "inputs": []
+ },
+ {
+  "type": "error",
+  "name": "NotOperator",
+  "inputs": []
+ },
+ {
+  "type": "error",
+  "name": "RequestIdMismatch",
+  "inputs": []
+ },
+ {
+  "type": "error",
+  "name": "StaleBaseline",
+  "inputs": []
+ },
+ {
+  "type": "error",
+  "name": "TransferFailed",
+  "inputs": []
+ },
+ {
+  "type": "error",
+  "name": "WindowClosed",
+  "inputs": []
+ },
+ {
+  "type": "error",
+  "name": "WindowOpen",
+  "inputs": []
+ },
+ {
+  "type": "error",
+  "name": "ZeroAddress",
+  "inputs": []
+ },
+ {
+  "type": "error",
+  "name": "ZeroAmount",
+  "inputs": []
+ }
+]

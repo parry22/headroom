@@ -1,0 +1,12 @@
+# Offline build of the reference escrow (contracts/reference). The submission contract comes from Arc Studio.
+[profile.default]
+src = "reference"
+test = "test"
+out = "out"
+cache_path = "cache"
+libs = []
+solc_version = "0.8.28"
+offline = true
+optimizer = true
+optimizer_runs = 200
+via_ir = false

@@ -14,3 +14,5 @@ gateway/ledger.db
 gateway/ledger.db-*
 .DS_Store
 gateway/spike-b-ledger.db*
+contracts/out/
+contracts/cache/

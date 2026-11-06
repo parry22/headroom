@@ -18,7 +18,7 @@ const N = Number(process.env.TAB_REQUESTS ?? 20);
 const DEPOSIT = BigInt(Math.round(Number(process.env.DEPOSIT_USDC ?? "2") * 1e6));
 if (!ESCROW || !process.env.BUYER_ARC_KEY || !process.env.ARC_OPERATOR_KEY) { console.error("need ARC_ESCROW_ADDRESS, BUYER_ARC_KEY, ARC_OPERATOR_KEY"); process.exit(2); }
 const buyer = wallet(process.env.BUYER_ARC_KEY!), operator = wallet(process.env.ARC_OPERATOR_KEY!);
-const sessionKey = process.env.SESSION_KEY ?? process.env.BUYER_ARC_KEY!;
+const sessionKey = process.env.SESSION_KEY || process.env.BUYER_ARC_KEY!;   // `||`: .env ships `SESSION_KEY=` empty
 const sessionAddr = wallet(sessionKey).account.address;
 const out: Record<string, unknown> = { escrow: ESCROW, buyer: buyer.account.address, operator: operator.account.address, steps: [] as unknown[] };
 const step = (name: string, data: unknown) => { console.log(name, JSON.stringify(data)); (out.steps as unknown[]).push({ name, ...(data as object) }); };

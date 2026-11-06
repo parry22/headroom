@@ -3,7 +3,7 @@
 SHELL := /bin/bash
 PY ?= uv run --with httpx python3
 export PY
-.PHONY: depth-check gateway-test bench-test bench bench-smoke correctness audit-prices caps-test replay-test reconcile demo settle-demo help
+.PHONY: depth-check escrow-test gateway-test bench-test bench bench-smoke correctness audit-prices caps-test replay-test reconcile demo settle-demo help
 
 help:
 	@grep -E '^[a-z-]+:' Makefile | cut -d: -f1 | tr '\n' ' '; echo
@@ -13,6 +13,9 @@ bench:          ## full run: A x1, B x3, C x3, 7 levels (~4.5 h)
 
 bench-smoke:    ## B and C, N=16 and 48, 1 run (~25 min)
 	bench/run.sh smoke
+
+escrow-test:    ## reference escrow Foundry tests (offline, solc 0.8.28)
+	cd contracts && forge test
 
 gateway-test:   ## gateway unit + flow tests against fakes (unit test only)
 	cd gateway && pnpm -s test

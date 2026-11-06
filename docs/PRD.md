@@ -320,7 +320,7 @@ Headroom only counts as technically deep if every Blocker below passes on eviden
 | S1 | Built in Arc Studio | Contract created and tested in Arc Studio; shareable project URL opens for a judge | Studio URL | Once, then before submit | Blocker | Not checked |
 | S2 | Full lifecycle | Deposit, batch post, window close and release on Arc testnet | 4 transaction links | Every contract change | Blocker | Not checked |
 | S3 | Dispute path | A deliberately wrong batch is challenged with a Merkle proof and the buyer is refunded | Challenged and Refunded transaction links | Every contract change | Major | Not checked |
-| S4 | Reconciliation | Released + refunded + remaining = deposited, per buyer, exactly | make reconcile returns 0 | Every 3 hours | Blocker | Not checked |
+| S4 | Reconciliation | deposited + penaltiesReceived = released + withdrawn + free + locked, per buyer, exactly (refunds return to free) | make reconcile returns 0 | Every 3 hours | Blocker | Not checked |
 | S5 | Baseline cap | postBatch above baselineAmount reverts | Contract test | Every contract change | Major | Not checked |
 | D1 | Fresh baseline | Pricing uses a baseline under 1 hour old, or the receipt says stale | /pricing response | Every 3 hours | Major | Not checked |
 | D2 | No hard-coded numbers | Every dashboard number links to a CSV row or a transaction | Click-through audit | Before each demo | Blocker | Not checked |
@@ -480,10 +480,11 @@ The biggest risk is a gain under 2x, because it removes the reason to exist; the
 
 - [ ] Which provider has an 80 GB GPU with at least 256 GB host RAM on demand right now?
 - [x] Does CRE support Arc testnet as a write target? Yes, `arc-testnet`; simulation uses a MockForwarder (7.7).
-- [ ] Which listed Hedera facilitator settles USDC via HTS on testnet today? Blocky402, x402.org and Launa all list `hedera:testnet`; HTS USDC settlement is proven only by Spike B.
+- [x] Which listed Hedera facilitator settles USDC via HTS on testnet today? Blocky402: Spike B and the 50-request demo-agent run settled HTS USDC (README).
 - [x] Which public source gives H100 and H200 rental prices for the CRE workflow? Vast.ai bundles API (keyless), RunPod GraphQL as fallback.
 - [ ] Operator share k: test 0.2, 0.3 and 0.5 in interviews.
 - [ ] Team roles, and who owns the depth-check agent.
+- [ ] Rehearsal escrow: `contracts/reference/HeadroomEscrow.sol` was written in the repo to prove S2–S5 on Arc testnet before Studio access. S1 still requires the Studio-built contract; swap `ARC_ESCROW_ADDRESS` once it is deployed and rerun `make settle-demo` and `make reconcile`.
 
 ## Sources
 

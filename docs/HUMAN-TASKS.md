@@ -5,9 +5,9 @@ Each unblocks a spike. Agent work continues in parallel on gateway, bench, signe
 **Status 2026-11-06 ~11:45 IST.** Repo is public at https://github.com/parry22/headroom (branch `main`). Already done by the agent: Arc keys generated into `.env` (`RECEIPT_SIGNING_KEY` `0x9ED0…19d6`, `ARC_OPERATOR_KEY` `0x3F3A…D0EB`, `BUYER_ARC_KEY` `0xBfa8…9625`; print them with `cd signer && pnpm -s exec tsx src/gen-keys.ts --addresses`), operator and buyer each funded with 20 Arc testnet USDC, Studio constructor values written into `contracts/STUDIO-PROMPT.md`. Hedera agent `0.0.11334561` holds 20 USDC; both Hedera accounts are USDC-associated (task 4 is done except the keys).
 
 What is left for the human, shortest first:
-- ~~Hedera keys~~ done; Spike B passed 2026-11-06 12:20 (P1, P5, P6; links in README). HCS topic `0.0.11335247`.
-- `npm install -g @circle-fin/arc-studio-cli@1.2.2 && arc-studio login` (browser authorize). Then the agent drives Arc Studio from the CLI (`arc-studio run --file contracts/IHeadroomEscrow.sol ...`), deploys, and pulls the sources back. You still check the shareable project URL logged out.
-- `cre login` (browser). Then the agent runs the simulation.
+- ~~Hedera keys~~ done; Spike B passed 2026-11-06 11:55 (P1, P5, P6; links in README). HCS topic `0.0.11335247`.
+- Arc tab pipeline is proven on a repo-written reference escrow (`0xfa7b…cb6f`, README); S2–S5 pass there. S1 still needs the Studio-built contract: `npm install -g @circle-fin/arc-studio-cli@1.2.2 && arc-studio login` (browser authorize). Then the agent drives Arc Studio from the CLI (`arc-studio run --file contracts/IHeadroomEscrow.sol ...`), deploys, and pulls the sources back. You still check the shareable project URL logged out.
+- `cre login` (browser). Then the agent runs the simulation. Until then the baseline is a manual relay of live Vast.ai medians (`source: manual-relay`), stale after 1 h.
 - Tasks 1–3 (GPU, HF token, node).
 
 | # | Task | Unblocks | Done when |
