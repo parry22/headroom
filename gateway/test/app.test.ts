@@ -39,6 +39,7 @@ beforeAll(async () => {
   process.env.HEDERA_OPERATOR_ID = "0.0.4242";
   process.env.GPU_USD_PER_HR = "3"; process.env.BOOTSTRAP_TOKENS_PER_HR_B = "20000000"; process.env.BOOTSTRAP_TOKENS_PER_HR_C = "40000000";
   process.env.RECEIPT_SIGNING_KEY = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d";
+  process.env.ARC_ESCROW_ADDRESS = "0x000000000000000000000000000000000000dEaD";
   const { Ledger } = await import("../src/ledger.js");
   const { PricingService } = await import("../src/pricingService.js");
   const { buildX402 } = await import("../src/x402.js");
@@ -46,7 +47,7 @@ beforeAll(async () => {
   const { createApp } = await import("../src/app.js");
   const ledger = new Ledger(":memory:");
   ledger.addPriceSnapshot({ ts: Date.now(), gpu_type: "H200", usd_per_hr: 3.9, source: "test" });
-  deps = { ledger, pricing: new PricingService(ledger), x402: buildX402(), hcs: new HcsLog(ledger) };
+  deps = { ledger, pricing: new PricingService(ledger), x402: buildX402(), hcs: new HcsLog(ledger), escrow: { sessionKeyExpiry: async () => BigInt(Math.floor(Date.now() / 1000) + 3600), free: async () => 5_000_000n } };
   deps.pricing.refresh();
   await deps.x402.http.initialize();
   app = createApp(deps);
@@ -104,6 +105,27 @@ describe("gateway", () => {
     expect(rr.status).toBe(402); expect((await rr.json()).error).toBe("payment_replayed");
     expect(settleCalls).toBe(before);
     expect(vllmCalls).toBe(1);
+  });
+  it("serves a tab request signed by a session key and records usage-based price (Mode B)", async () => {
+    const { privateKeyToAccount } = await import("viem/accounts");
+    const { keccak256, toBytes } = await import("viem");
+    const { TAB_TYPES, tabDomain } = await import("../src/tab.js");
+    const key = privateKeyToAccount("0x8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba");
+    const body = { messages: msgs, max_tokens: 5, stream: true };
+    const bodyJson = JSON.stringify(body);
+    const msg = { buyer: key.address, key: key.address, timestamp: BigInt(Math.floor(Date.now() / 1000)), nonce: "n-1", bodyHash: keccak256(toBytes(bodyJson)) };
+    const signature = await key.signTypedData({ domain: tabDomain(), types: TAB_TYPES, primaryType: "TabRequest", message: msg });
+    const header = Buffer.from(JSON.stringify({ ...msg, timestamp: Number(msg.timestamp), signature })).toString("base64");
+    const r = await fetch(`${base}/v1/chat/completions`, { method: "POST", headers: { "content-type": "application/json", "x-headroom-tab": header }, body: bodyJson });
+    expect(r.status).toBe(200); expect(r.headers.get("x-headroom-mode")).toBe("tab");
+    const text = await r.text(); expect(text).toContain("headroom_receipt");
+    const rec = deps.ledger.get(r.headers.get("x-headroom-request-id")!);
+    expect(rec.mode).toBe("B"); expect(rec.buyer).toBe(key.address.toLowerCase()); expect(rec.status).toBe("done");
+    const { usageMicro } = await import("../src/pricing.js");
+    expect(rec.price).toBe(usageMicro(rec.unit_prices, 40, 16, 5));   // usage-priced with the cached discount (fake vLLM reports 40/16/5)
+    // nonce replay refused
+    const rr = await fetch(`${base}/v1/chat/completions`, { method: "POST", headers: { "content-type": "application/json", "x-headroom-tab": header }, body: bodyJson });
+    expect(rr.status).toBe(402); expect((await rr.json()).error).toBe("tab_nonce_replayed");
   });
   it("serves pricing and discovery with the baseline timestamp", async () => {
     const p = await (await fetch(`${base}/pricing`)).json();

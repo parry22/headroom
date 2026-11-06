@@ -12,12 +12,13 @@ import { countPromptTokens, metricsSnapshot, models, proxyChat, type ChatBody } 
 import { ExpressAdapter, buildX402, type X402 } from "./x402.js";
 import { HcsLog } from "./hcs.js";
 import { leafHash, receiptSigner, requestIdHash, serializeReceipt, type ReceiptFields } from "./receipt.js";
+import { chainEscrowReader, parseTabHeader, verifyTab, type EscrowReader } from "./tab.js";
 
-export interface Deps { ledger: Ledger; pricing: PricingService; x402: X402; hcs: HcsLog }
+export interface Deps { ledger: Ledger; pricing: PricingService; x402: X402; hcs: HcsLog; escrow: EscrowReader | null }
 
 export function buildDeps(): Deps {
   const ledger = new Ledger(cfg.ledgerPath);
-  return { ledger, pricing: new PricingService(ledger), x402: buildX402(), hcs: new HcsLog(ledger) };
+  return { ledger, pricing: new PricingService(ledger), x402: buildX402(), hcs: new HcsLog(ledger), escrow: cfg.arcEscrowAddress ? chainEscrowReader() : null };
 }
 
 const signer = cfg.receiptSigningKey ? receiptSigner(cfg.receiptSigningKey) : null;
@@ -88,6 +89,10 @@ async function chat(d: Deps, req: Request, res: Response): Promise<void> {
   const quote = quoteMicro(price.rates.r_in, price.rates.r_out, promptTokens, maxTokens);
   const caps = checkCaps(d.ledger, buyerHeader, cfg.model, quote, req.header("x-headroom-max-price") || undefined);
   if (!caps.ok) { res.status(403).json({ error: caps.reason, ...caps.detail, quote_micro_usdc: quote, request_id: requestId }); return; }
+
+  // Mode B: tab request signed by a registered session key; settles later in a batch on Arc.
+  const tabHeader = req.header("x-headroom-tab");
+  if (tabHeader) { await tab(d, req, res, body, tabHeader, { requestId, promptTokens, maxTokens, quote, price }); return; }
 
   // 2. x402: no header -> 402 with PAYMENT-REQUIRED; header -> verify, then settle before the handler (upfront flow).
   const adapter = new ExpressAdapter(req);
@@ -160,4 +165,53 @@ async function chat(d: Deps, req: Request, res: Response): Promise<void> {
     res.end();
   }
   void status;
+}
+
+/** Mode B: verify the session-key signature and escrow balance, serve, then record usage-priced (not conservative) for the next batch. */
+async function tab(d: Deps, req: Request, res: Response, body: ChatBody, header: string,
+                   q: { requestId: string; promptTokens: number; maxTokens: number; quote: number; price: ReturnType<PricingService["get"]> }): Promise<void> {
+  if (!d.escrow) { res.status(503).json({ error: "tab_not_configured" }); return; }
+  let t; try { t = parseTabHeader(header); } catch { res.status(400).json({ error: "bad_tab_header" }); return; }
+  const bodyHash = keccak256(toBytes(JSON.stringify(body)));
+  const buyer = String(t.buyer).toLowerCase();
+  const outstanding = Number((d.ledger.db.prepare(`SELECT COALESCE(SUM(price),0) s FROM usage_record WHERE mode='B' AND buyer=? AND batch_id IS NULL AND status IN ('paid','done')`).get(buyer) as any).s);
+  const v = await verifyTab(t, bodyHash, d.escrow, outstanding, q.quote);
+  if (!v.ok) { res.status(402).json({ error: v.reason, ...("detail" in v ? v.detail : {}), quote_micro_usdc: q.quote, request_id: q.requestId }); return; }
+  if (!d.ledger.markPayment(keccak256(toBytes(`tab:${buyer}:${t.nonce}`)), q.requestId)) { res.status(402).json({ error: "tab_nonce_replayed" }); return; }
+  const rec: UsageRecord = {
+    request_id: q.requestId, mode: "B", buyer, model: cfg.model, prompt_tokens: q.promptTokens, quoted_prompt_tokens: q.promptTokens, cached_tokens: 0, completion_tokens: 0, max_tokens: q.maxTokens,
+    tier_l1_delta: null, tier_l2_delta: null, kv_bytes_peak: null, ttft_ms: null, latency_ms: null, gpu_seconds: null,
+    unit_prices: { r_in: q.price.rates.r_in, r_cached: q.price.rates.r_cached, r_out: q.price.rates.r_out, price_version: q.price.version },
+    price: q.quote, actual_cost: null, baseline_cost: null, payment_tx: null, payment_asset: `eip155:${cfg.arcChainId}/tab`, hcs_seq: null, batch_id: null,
+    status: "paid", created_at: Date.now(), receipt: null,
+  };
+  d.ledger.insert(rec);
+  res.set("x-headroom-request-id", q.requestId).set("x-headroom-quote", String(q.quote)).set("x-headroom-mode", "tab");
+  const before = await metricsSnapshot();
+  const stream = body.stream === true;
+  res.status(200).type(stream ? "text/event-stream" : "application/json");
+  try {
+    const out = await proxyChat({ ...body, max_tokens: q.maxTokens }, chunk => { res.write(chunk); }, AbortSignal.timeout(600_000));
+    const after = await metricsSnapshot();
+    const price = usageMicro(q.price.rates, out.usage.prompt_tokens || q.promptTokens, out.usage.cached_tokens, out.usage.completion_tokens);
+    const fields: ReceiptFields = {
+      requestId: requestIdHash(q.requestId), buyer, promptTokens: BigInt(out.usage.prompt_tokens || q.promptTokens), cachedTokens: BigInt(out.usage.cached_tokens),
+      completionTokens: BigInt(out.usage.completion_tokens), rIn: BigInt(q.price.rates.r_in), rCached: BigInt(q.price.rates.r_cached), rOut: BigInt(q.price.rates.r_out),
+      price: BigInt(price), timestamp: BigInt(Math.floor(Date.now() / 1000)),
+    };
+    const receipt = signer ? serializeReceipt(fields, await signer.sign(fields), signer.address) : null;
+    d.ledger.update(q.requestId, {
+      prompt_tokens: Number(fields.promptTokens), cached_tokens: out.usage.cached_tokens, completion_tokens: out.usage.completion_tokens, price,
+      ttft_ms: out.ttft_ms, latency_ms: out.latency_ms, gpu_seconds: out.latency_ms / 1000,
+      tier_l1_delta: before.l1_hits != null && after.l1_hits != null ? after.l1_hits - before.l1_hits : null,
+      tier_l2_delta: before.l2_hits != null && after.l2_hits != null ? after.l2_hits - before.l2_hits : null,
+      actual_cost: Math.round(q.price.rates.c_a / q.price.rates.p * price), baseline_cost: Math.round(q.price.rates.c_b / q.price.rates.p * price),
+      status: out.status === 200 ? "done" : "failed", receipt,
+    });
+    if (stream && receipt) res.write(`data: ${JSON.stringify({ headroom_receipt: receipt, request_id: q.requestId, leaf: leafHash(fields), mode: "tab", price_micro_usdc: price })}\n\n`);
+    d.hcs.enqueue({ r: q.requestId, b: buyer, p: Number(fields.promptTokens), c: out.usage.cached_tokens, o: out.usage.completion_tokens, q: price, tx: "tab", t: Number(fields.timestamp), m: "B" });
+  } catch (e) {
+    d.ledger.update(q.requestId, { status: "failed", price: 0 });
+    if (!stream) res.write(JSON.stringify({ error: "inference_failed", message: (e as Error).message, request_id: q.requestId }));
+  } finally { res.end(); }
 }

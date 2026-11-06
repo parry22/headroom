@@ -1,0 +1,1 @@
+{ "compilerOptions": { "target": "ES2022", "module": "NodeNext", "moduleResolution": "NodeNext", "strict": true, "skipLibCheck": true, "types": ["node"], "allowImportingTsExtensions": false }, "include": ["src", "test", "../gateway/src/receipt.ts", "../gateway/src/ledger.ts", "../gateway/src/pricing.ts"] }
