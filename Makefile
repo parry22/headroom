@@ -3,7 +3,7 @@
 SHELL := /bin/bash
 PY ?= uv run --with httpx python3
 export PY
-.PHONY: depth-check escrow-test gateway-test bench-test bench bench-smoke correctness audit-prices caps-test replay-test reconcile demo settle-demo help
+.PHONY: depth-check escrow-test gateway-test bench-test bench bench-smoke correctness audit-prices caps-test replay-test reconcile fresh-baseline demo settle-demo help
 
 help:
 	@grep -E '^[a-z-]+:' Makefile | cut -d: -f1 | tr '\n' ' '; echo
@@ -37,6 +37,12 @@ replay-test:    ## reused payment payload is rejected
 
 reconcile:      ## deposited + penalties == released + withdrawn + free + locked, per buyer, from Arc events
 	cd signer && pnpm -s reconcile
+
+fresh-baseline: ## CRE sim + operator relay of the consensus baseline to Arc and HCS (~30 s; re-run <1 h before judging, once per 15-min cron slot)
+	set -o pipefail; export PATH=$$HOME/.local/bin:$$PATH; ts=$$(date +%s); \
+	cd cre && cre workflow simulate price-baseline --target staging-settings 2>&1 | tee sim-$$ts.log \
+	&& grep -q 'consensus baselines:' sim-$$ts.log \
+	&& cd ../signer && node_modules/.bin/tsx src/set-baseline.ts --log ../cre/sim-$$ts.log
 
 demo:           ## demo buyer agent, 20 unattended paid turns on Hedera testnet
 	cd agent && pnpm -s start

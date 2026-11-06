@@ -1,0 +1,32 @@
+Initializing...
+Loading settings...
+! Using default private key for chain write simulation. To use your own key, set CRE_ETH_PRIVATE_KEY in your .env file or system environment.
+Checking RPC connectivity...
+Compiling workflow...
+✓ Workflow compiled
+✓ Simulation limits enabled
+  HTTP: req=120kb resp=250kb timeout=10s | ConfHTTP: req=125kb resp=500kb timeout=1m30s | Consensus obs=25kb | ChainWrite evm_report=50kb evm_gas=10000000 solana_report=265b solana_cu=300000 | WASM binary=100mb compressed=20mb
+  Binary hash: f1958e6d670202a757a6aa523c284a0090fd8117435948b0ad61a2e970070710
+  Config hash: 0245a0440c822b6bf1ed80754dc4eb07b2bb349746658541d71ba5067410f101
+2026-11-06T20:59:58Z [SIMULATION] Simulator Initialized
+
+2026-11-06T20:59:58Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+
+2026-11-06T21:00:00Z [USER LOG] price-baseline run scheduled at 2026-11-06T15:30:00.000Z
+2026-11-06T21:00:01Z [USER LOG] vast H100: 5 offers, median 3.4053 $/hr
+2026-11-06T21:00:02Z [USER LOG] vast H200: 20 offers, median 4.3066 $/hr
+2026-11-06T21:00:02Z [USER LOG] consensus baselines: H100=3405333 e6 ($3.4053/hr) H200=4306594 e6 ($4.3066/hr)
+2026-11-06T21:00:03Z [USER LOG] writeReport H100: txHash=0x0000000000000000000000000000000000000000000000000000000000000000 txStatus=2 receiverStatus=0
+2026-11-06T21:00:04Z [USER LOG] writeReport H200: txHash=0x0000000000000000000000000000000000000000000000000000000000000000 txStatus=2 receiverStatus=0
+
+✓ Workflow Simulation Result:
+"{\"timestamp\":\"1793979000\",\"h100UsdPerHourE6\":\"3405333\",\"h200UsdPerHourE6\":\"4306594\",\"txHashes\":{\"H100\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"H200\":\"0x0000000000000000000000000000000000000000000000000000000000000000\"}}"
+
+2026-11-06T21:00:04Z [SIMULATION] Execution finished signal received
+2026-11-06T21:00:04Z [SIMULATION] Skipping WorkflowEngineV2
+
+╭──────────────────────────────────────────────────────╮
+│ Simulation complete! Ready to deploy your workflow?  │
+│                                                      │
+│ Run cre account access to request deployment access. │
+╰──────────────────────────────────────────────────────╯
