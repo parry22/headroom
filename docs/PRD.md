@@ -178,7 +178,7 @@ L = layers, H\_kv = KV heads, d\_head = head dimension, b = bytes per value. For
 | BF16 (b = 2) | 128 KiB | 4 GiB | about 13 |
 | FP8 (b = 1) | 64 KiB | 2 GiB | about 26 |
 
-Resident estimate assumes 90% of HBM usable and about 16 GB of BF16 weights. A 256 GB host can park roughly 100 more FP8 sessions in DRAM. Reloading a 2 GiB session over PCIe Gen4 x16 (about 25 GB/s in practice) takes roughly 0.1 s, well inside the TTFT target.
+Resident estimate assumes 90% of HBM usable and about 16 GB of BF16 weights. On the RTX 4090 node actually used (24 GB, 9.1 GB FP8 weights) about 11 GB is left for KV: about 5 full 32K FP8 sessions resident, so most of the working set must live in DRAM and NVMe. A 256 GB host can park roughly 100 more FP8 sessions in DRAM. Reloading a 2 GiB session over PCIe Gen4 x16 (about 25 GB/s in practice) takes roughly 0.1 s, well inside the TTFT target.
 
 ```latex
 N_{max} \approx \min\left(\frac{S_{hbm}}{u},\; S_{hbm} + S_{dram}\right)
@@ -188,9 +188,9 @@ S\_hbm = sessions resident in HBM, S\_dram = sessions parked in DRAM, u = share 
 
 ### 7.2 Inference node
 
-- **Hardware:** one GPU with 48 to 80 GB (H100 80 GB preferred, L40S 48 GB fallback), host RAM ≥ 256 GB, local NVMe ≥ 1 TB, PCIe Gen4 x16 or better.
-- **Software:** vLLM and LMCache at pinned versions in one Docker image, using LMCache's vLLM connector. Model: an open-weight 8B-class instruct model with 128K context and a license that allows hosted serving.
-- **Config:** prefix caching on; FP8 KV cache (`--kv-cache-dtype fp8`); max context 64K; LMCache CPU tier sized to about 80% of host RAM; NVMe tier for cold sessions and shared prefixes; chunk size starts at 256 tokens and is tuned by the harness.
+- **Hardware (decision 2026-11-06, cheapest that proves the claim):** one RTX 4090 24 GB (Ada, native FP8), host RAM ≥ 60 GB, disk ≥ 200 GB, host driver with CUDA ≥ 13.0 (the image is CUDA 13.0), about $0.35/h on Vast.ai. A smaller HBM makes the offload gain larger, because config B runs out of KV room sooner while config C spills to DRAM and NVMe. Larger GPUs (L40S 48 GB, H100 80 GB) run the same configs with larger bench levels.
+- **Software:** vLLM and LMCache at pinned versions in one Docker image, using LMCache's vLLM connector. Model: `RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8`, ungated FP8 weights (9.1 GB) of Llama 3.1 8B Instruct, same architecture (32 layers, 8 KV heads, head dim 128), Llama 3.1 Community License. On a host that is itself a container (Vast.ai), `infra/run-node.sh` runs vLLM and LMCache as processes from the same image instead of Docker containers.
+- **Config:** prefix caching on; FP8 KV cache (`--kv-cache-dtype fp8`); max context 40960 (bench sessions reach about 36.5K prompt tokens); LMCache CPU tier 40 GB of a 63 GB host; NVMe tier for cold sessions and shared prefixes; chunk size starts at 256 tokens and is tuned by the harness.
 - **Isolation:** cache keys salted per buyer, except published public prefixes such as Headroom's own tool schemas (see 7.10).
 - **Telemetry:** Prometheus metrics from vLLM and LMCache, scraped by the harness and the meter.
 
@@ -467,7 +467,7 @@ The biggest risk is a gain under 2x, because it removes the reason to exist; the
 | Risk | Likelihood | Impact | Mitigation |
 | --- | --- | --- | --- |
 | Gain under 2x | Medium | Fails M2, removes the edge | Realistic tool-call gaps, tuned chunk size, honest u reporting; the attribution table shows where gain comes from |
-| No on-demand GPU with enough host RAM | Medium | Blocks G1 | Book two providers in block 1; fall back to a 48 GB GPU at 16K context, where the ratio still holds |
+| No on-demand GPU with enough host RAM | Low (24 GB consumer GPUs are plentiful) | Blocks G1 | RTX 4090 with ≥ 60 GB RAM on Vast.ai; several offers under $0.40/h with CUDA 13 drivers on 2026-11-06 |
 | vLLM and LMCache version mismatch | Medium | Lost hours | Pin versions in one Docker image; use only the documented connector |
 | Chosen facilitator cannot settle USDC on HTS, or goes down | Low to medium | Blocks P1 | Integrate two listed facilitators; HBAR fallback, labelled in receipts |
 | Other teams lack testnet USDC | High | Slows V1 | Faucet links and a one-line top-up script in the README; tiny prices |
@@ -479,7 +479,7 @@ The biggest risk is a gain under 2x, because it removes the reason to exist; the
 
 **Open questions.**
 
-- [ ] Which provider has an 80 GB GPU with at least 256 GB host RAM on demand right now?
+- [x] Which GPU, and where? RTX 4090 24 GB on Vast.ai (decision 2026-11-06), FP8 weights, about $0.35/h.
 - [x] Does CRE support Arc testnet as a write target? Yes, `arc-testnet`; simulation uses a MockForwarder (7.7).
 - [x] Which listed Hedera facilitator settles USDC via HTS on testnet today? Blocky402: Spike B and the 50-request demo-agent run settled HTS USDC (README).
 - [x] Which public source gives H100 and H200 rental prices for the CRE workflow? Vast.ai bundles API (keyless), RunPod GraphQL as fallback.

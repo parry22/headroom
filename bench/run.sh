@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Orchestrate a benchmark run on the GPU node.
-#   bench/run.sh smoke [RUN_ID]   # B,C ; N=16,48 ; 1 run    (~25 min)
-#   bench/run.sh full  [RUN_ID]   # A x1, B x3, C x3 ; N=4..96 (~4.5 h)
+#   bench/run.sh smoke [RUN_ID]   # B,C ; N=4,16 ; 1 run      (~20 min)
+#   bench/run.sh full  [RUN_ID]   # A x1, B x3, C x3 ; N=2..32 (~2.7 h)
+# Levels sized for a 24 GB GPU (RTX 4090, FP8 weights ~8.5 GB, ~11 GB KV). Override with LEVELS="...".
 set -euo pipefail
 MODE=${1:?smoke|full}
 RUN_ID=${2:-$(date +%Y%m%d-%H%M)-$MODE}
@@ -13,11 +14,11 @@ LMCACHE_HTTP_PORT=${LMCACHE_HTTP_PORT:-8080}
 mkdir -p "$OUT"
 
 case "$MODE" in
-  smoke) CONFIGS="B C"; LEVELS="16 48"; RUNS_A=1; RUNS_BC=1; WARM=60 ;;
-  full)  CONFIGS="A B C"; LEVELS="4 8 16 32 48 64 96"; RUNS_A=1; RUNS_BC=3; WARM=120 ;;
+  smoke) CONFIGS="B C"; LEVELS=${LEVELS:-"4 16"}; RUNS_A=1; RUNS_BC=1; WARM=60 ;;
+  full)  CONFIGS="A B C"; LEVELS=${LEVELS:-"2 4 8 16 24 32"}; RUNS_A=1; RUNS_BC=3; WARM=90 ;;
   *) echo "mode must be smoke|full" >&2; exit 2 ;;
 esac
-SETTLE=${SETTLE:-60}; DURATION=${DURATION:-240}
+SETTLE=${SETTLE:-45}; DURATION=${DURATION:-180}
 
 cd "$ROOT/bench"
 echo "run_id=$RUN_ID mode=$MODE configs=[$CONFIGS] levels=[$LEVELS] out=$OUT" | tee "$OUT/run.log"

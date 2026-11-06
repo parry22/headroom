@@ -127,3 +127,6 @@ Still human-blocked: GPU + `HF_TOKEN` (G1, M1–M7, real-inference P4), `cre log
 
 
 ~19:10 IST: **Plan A, tracks narrowed to Hedera + Chainlink.** CRE does not list Hedera as a supported network (Arc Testnet is listed), so Arc stays as the CRE write target and tab settlement chain but is not pitched. Added: each relayed baseline is also published to its own HCS topic `0.0.11339845` (`HCS_BASELINE_TOPIC_ID`, `publishBaseline` in `gateway/src/hcs.ts`, called by `signer/src/set-baseline.ts`); kept off the paid-request topic so P6 stays exact. Fresh CRE run `cre-sim:ca88c9703a4b6e88` relayed to Arc and HCS (messages 1, 2). PRD section 9 and the demo script, README and dashboard order now lead with Hedera, then Chainlink, then Arc.
+
+~19:40 IST: **Cheapest node.** Switched to an RTX 4090 24 GB (Vast.ai, about $0.35/h, CUDA ≥ 13.0 driver needed for the CUDA 13.0 image) and the ungated `RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8` (same architecture, so M6 math is unchanged; no HF token). `MAX_MODEL_LEN` 40960 (bench prompts reach ~36.5K), LMCache L1 40 GB, L2 120 GB at `/root/lmcache-l2`. Bench levels 2..32 (full ~2.7 h, smoke N=4,16 ~20 min). `infra/run-node.sh`, `stop-node.sh` and `engine-info.sh` run vLLM and LMCache as plain processes when the host has no Docker (Vast instances are containers); logs and pids in `infra/logs/`. Not yet run on hardware.
+

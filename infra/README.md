@@ -11,7 +11,8 @@ One GPU, one pinned image (`infra/VERSIONS.md`). Configs in `infra/configs/` dif
 ## Bring-up
 
 ```bash
-cp .env.example .env   # fill HF_TOKEN, LMCACHE_L1_GB (~80% host RAM), LMCACHE_L2_PATH, LMCACHE_L2_GB
+cp .env.example .env   # defaults fit a 24 GB GPU / 63 GB RAM box; HF_TOKEN not needed (ungated model)
+# no Docker on the host (Vast.ai container from lmcache/vllm-openai:v0.5.6)? run-node.sh starts plain processes
 infra/run-node.sh C
 python3 infra/tierhit_smoke.py --fillers 80
 infra/engine-info.sh

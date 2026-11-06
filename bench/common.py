@@ -5,7 +5,7 @@ import httpx
 
 VLLM_URL = os.environ.get("VLLM_URL", "http://localhost:8000")
 LMCACHE_METRICS_URL = os.environ.get("LMCACHE_METRICS_URL", "http://localhost:8080/metrics")
-MODEL = os.environ.get("MODEL", "meta-llama/Llama-3.1-8B-Instruct")
+MODEL = os.environ.get("MODEL", "RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8")
 
 WORDS = ("alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau "
          "upsilon phi chi psi omega ledger kernel memory tensor cache token agent tool budget receipt batch "

@@ -16,7 +16,7 @@ export const SCHEMA = `
 `;
 
 const UNIT = JSON.stringify({ r_in: 180000, r_cached: 36000, r_out: 540000, price_version: 3 });
-const MODEL = "meta-llama/Llama-3.1-8B-Instruct";
+const MODEL = "RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8";
 const T0 = 1762400000000; // fixed epoch ms so the fixture is deterministic
 
 export const RECORDS = [

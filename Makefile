@@ -8,10 +8,10 @@ export PY
 help:
 	@grep -E '^[a-z-]+:' Makefile | cut -d: -f1 | tr '\n' ' '; echo
 
-bench:          ## full run: A x1, B x3, C x3, 7 levels (~4.5 h)
+bench:          ## full run: A x1, B x3, C x3, 6 levels N=2..32 (~2.7 h, sized for 24 GB)
 	bench/run.sh full
 
-bench-smoke:    ## B and C, N=16 and 48, 1 run (~25 min)
+bench-smoke:    ## B and C, N=4 and 16, 1 run (~20 min)
 	bench/run.sh smoke
 
 escrow-test:    ## escrow Foundry tests (offline, solc 0.8.28)

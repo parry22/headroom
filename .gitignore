@@ -16,3 +16,4 @@ gateway/ledger.db-*
 gateway/spike-b-ledger.db*
 contracts/out/
 contracts/cache/
+infra/logs/
