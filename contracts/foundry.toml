@@ -1,6 +1,6 @@
-# Offline build of the reference escrow (contracts/reference). The submission contract comes from Arc Studio.
+# Offline Foundry build of the Headroom escrow (contracts/src). Deployed to Arc testnet by signer/src/deploy-escrow.ts.
 [profile.default]
-src = "reference"
+src = "src"
 test = "test"
 out = "out"
 cache_path = "cache"

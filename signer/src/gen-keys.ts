@@ -11,8 +11,8 @@ import type { Hex } from "viem";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const envPath = path.join(root, ".env");
 const SLOTS = [
-  { key: "RECEIPT_SIGNING_KEY", use: "Studio constructor arg `receiptSigner`; no funds needed" },
-  { key: "ARC_OPERATOR_KEY", use: "Studio constructor arg `operator`; fund with Arc testnet USDC (posts batches, bond)" },
+  { key: "RECEIPT_SIGNING_KEY", use: "escrow constructor arg `receiptSigner`; no funds needed" },
+  { key: "ARC_OPERATOR_KEY", use: "escrow constructor arg `operator`; fund with Arc testnet USDC (posts batches, bond)" },
   { key: "BUYER_ARC_KEY", use: "demo tab buyer; fund with Arc testnet USDC (deposit + gas)" },
 ];
 const readOnly = process.argv.includes("--addresses");

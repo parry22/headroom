@@ -116,7 +116,7 @@ A request runs left to right along the top row and is paid on Hedera before the 
 | Inference engine | vLLM + LMCache in one pinned Docker image | GPU node |
 | Batch signer | TypeScript, Merkle tree library, viem | GPU node |
 | Dashboard | Next.js reading the ledger and bench CSVs | GPU node or static host |
-| Arc escrow | Solidity, created and tested in Arc Studio | Arc testnet |
+| Arc escrow | Solidity, built and tested with Foundry, deployed to Arc from the CLI | Arc testnet |
 | Price baseline | Chainlink CRE workflow | CRE CLI simulation |
 | Audit log | Hedera Consensus Service topic | Hedera testnet |
 
@@ -317,7 +317,7 @@ Headroom only counts as technically deep if every Blocker below passes on eviden
 | P4 | Caps refuse before GPU | 3 over-cap requests refused and the vLLM request counter does not move | Test output and metrics diff | Every gateway change | Blocker | Not checked |
 | P5 | Replay protection | A reused payment payload is rejected | Test output | Every gateway change | Major | Not checked |
 | P6 | Audit completeness | HCS message count equals paid request count | Mirror node query vs ledger count | Every 3 hours | Major | Not checked |
-| S1 | Built in Arc Studio | Contract created and tested in Arc Studio; shareable project URL opens for a judge | Studio URL | Once, then before submit | Blocker | Not checked |
+| S1 | Built and deployed for Arc | Contract tested (`make escrow-test`) and deployed to Arc testnet from the CLI; source in the repo (Arc judges: CLI deploy qualifies, Studio not required) | Deploy tx link + test output | Once, then before submit | Blocker | Not checked |
 | S2 | Full lifecycle | Deposit, batch post, window close and release on Arc testnet | 4 transaction links | Every contract change | Blocker | Not checked |
 | S3 | Dispute path | A deliberately wrong batch is challenged with a Merkle proof and the buyer is refunded | Challenged and Refunded transaction links | Every contract change | Major | Not checked |
 | S4 | Reconciliation | deposited + penaltiesReceived = released + withdrawn + free + locked, per buyer, exactly (refunds return to free) | make reconcile returns 0 | Every 3 hours | Blocker | Not checked |
@@ -379,12 +379,12 @@ The three picks are Hedera x402 ($6,500 pool, primary), Arc advanced stablecoin 
 - [ ] Demo video of 5 minutes or less showing a payment settling, linked on HashScan
 - [ ] Extra points: spending controls (F5), an HCS topic as a tamper-evident spend log (F6), settling in USDC via HTS
 
-**Arc: Best Smart Contracts with Advanced Stablecoin Logic, in Arc Studio**
+**Arc: Best Smart Contracts with Advanced Stablecoin Logic**
 
-- [ ] Arc Studio used as the starting point for the contract
-- [ ] Shareable Arc Studio project URL in the submission, and Studio shown in the demo
+- [x] Contract deployed to Arc testnet from the CLI (judges confirmed Studio is optional)
+- [ ] Escrow address, source link and lifecycle transactions in the submission, and the contract shown in the demo
 - [ ] Working frontend and backend plus an architecture diagram
-- [ ] Video covering core functions and the use of Arc Studio and Circle tools, with documentation
+- [ ] Video covering core functions and the use of Arc and Circle tools, with documentation
 - [ ] GitHub or Replit repo link
 - [ ] Submission states which Arc bounty it targets
 - [ ] USDC logic that is visibly advanced: conditional release, dispute window, multi-step settlement, software-to-software payment
@@ -416,7 +416,7 @@ A block is done only when its gate passes in the depth bar (section 8). If a gat
 | --- | --- | --- |
 | Infra | GPU node, vLLM + LMCache, harness, correctness test | G1 passes |
 | Payments | x402 gateway, caps, HCS log, demo agent, discovery manifest | G2 passes |
-| Contracts | Arc escrow in Studio, batch signer, reconcile script, CRE workflow | G3 and D1 pass |
+| Contracts | Arc escrow (Foundry, CLI deploy), batch signer, reconcile script, CRE workflow | G3 and D1 pass |
 | Product | Dashboard, distribution, interviews, video, README | G4 and G5 pass |
 | Depth-check agent | Runs the section 8 protocol every 3 hours and on each push | Every run logged |
 
@@ -431,7 +431,7 @@ The demo proves the memory claim first, then the money loop, then demand. Every 
 1. **0:00 to 0:30, problem.** H200 rents are up about 160% this year against about 35% for H100, and the gap is memory. Agents hold HBM hostage while they wait on tools.
 2. **0:30 to 1:15, memory proof.** Dashboard capacity curve, config B against C on the same GPU. Point at N\_C ÷ N\_B, the DRAM and NVMe hits, and the bit-exact check.
 3. **1:15 to 2:15, live paid call.** The demo agent hits the endpoint, gets a 402, pays and streams. Open the HashScan transaction and the HCS entry, then show an over-cap request refused before the GPU.
-4. **2:15 to 3:00, tab on Arc.** Deposit, batch root posted, a wrong batch challenged and refunded, a clean batch released. Show the Arc Studio project.
+4. **2:15 to 3:00, tab on Arc.** Deposit, batch root posted, a wrong batch challenged and refunded, a clean batch released. Show the contract source and the Arc explorer.
 5. **3:00 to 3:30, baseline.** The CRE simulation sets c\_b; a receipt shows savings against the H200-equivalent.
 6. **3:30 to 4:00, demand.** External paying teams, tokens served, two interview quotes, and the ask.
 
@@ -484,7 +484,7 @@ The biggest risk is a gain under 2x, because it removes the reason to exist; the
 - [x] Which public source gives H100 and H200 rental prices for the CRE workflow? Vast.ai bundles API (keyless), RunPod GraphQL as fallback.
 - [ ] Operator share k: test 0.2, 0.3 and 0.5 in interviews.
 - [ ] Team roles, and who owns the depth-check agent.
-- [ ] Rehearsal escrow: `contracts/reference/HeadroomEscrow.sol` was written in the repo to prove S2–S5 on Arc testnet before Studio access. S1 still requires the Studio-built contract; swap `ARC_ESCROW_ADDRESS` once it is deployed and rerun `make settle-demo` and `make reconcile`.
+- [x] Must the escrow be built in Arc Studio? No: the Arc judges confirmed any CLI deploy to Arc counts (2026-11-06). `contracts/src/HeadroomEscrow.sol` is the submission contract.
 
 ## Sources
 

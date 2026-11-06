@@ -2,8 +2,8 @@
 pragma solidity ^0.8.24;
 
 /// @title IHeadroomEscrow: savings-share escrow for Headroom tabs (Mode B) on Arc.
-/// @notice The repo codes against this interface (signer, reconcile, gateway). The contract itself is
-///         written, tested and deployed in Arc Studio (track rule) and must implement exactly these
+/// @notice The repo codes against this interface (signer, reconcile, gateway). The implementation is
+///         contracts/src/HeadroomEscrow.sol (Foundry build, CLI deploy to Arc testnet) and implements exactly these
 ///         functions and events. USDC is the ERC-20 interface at 0x3600000000000000000000000000000000000000
 ///         on Arc (6 decimals). Never use msg.value: native USDC on Arc has 18 decimals.
 interface IHeadroomEscrow {

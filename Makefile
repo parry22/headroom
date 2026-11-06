@@ -14,7 +14,7 @@ bench:          ## full run: A x1, B x3, C x3, 7 levels (~4.5 h)
 bench-smoke:    ## B and C, N=16 and 48, 1 run (~25 min)
 	bench/run.sh smoke
 
-escrow-test:    ## reference escrow Foundry tests (offline, solc 0.8.28)
+escrow-test:    ## escrow Foundry tests (offline, solc 0.8.28)
 	cd contracts && forge test
 
 gateway-test:   ## gateway unit + flow tests against fakes (unit test only)

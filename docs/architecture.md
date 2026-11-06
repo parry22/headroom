@@ -23,7 +23,7 @@ flowchart LR
     HCS[HCS audit topic]
   end
   subgraph Arc[Arc testnet]
-    E[HeadroomEscrow<br/>built in Arc Studio]
+    E[HeadroomEscrow<br/>Foundry, CLI deploy]
   end
   subgraph CL[Chainlink]
     CRE[CRE workflow<br/>Vast/RunPod median]

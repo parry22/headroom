@@ -4,7 +4,7 @@ Long-context inference on cheap memory, sold per token to agents.
 
 One GPU node runs vLLM + LMCache so only hot KV cache sits in HBM; warm KV parks in CPU DRAM and cold KV on NVMe. Agents pay per request over x402 on Hedera testnet (USDC via HTS), or run a tab that settles in USDC on Arc testnet through a savings-share escrow. A Chainlink CRE workflow sets the H200-equivalent price baseline.
 
-Built at ETHGlobal Mumbai, 6 to 8 Nov 2026. Tracks: Hedera x402, Arc advanced stablecoin logic (Arc Studio), Chainlink CRE.
+Built at ETHGlobal Mumbai, 6 to 8 Nov 2026. Tracks: Hedera x402, Arc advanced stablecoin logic, Chainlink CRE.
 
 ## Status
 
@@ -19,7 +19,7 @@ Not yet demoable. See `docs/PRD.md` section 8 for the depth bar and `docs/check-
 | `bench/` | replay harness, metrics scraper, report, raw results |
 | `gateway/` | x402 gateway, pricing, caps, meter, HCS log |
 | `signer/` | Merkle batch signer and Arc reconcile |
-| `contracts/` | read-only mirror of the Arc Studio escrow (source of truth is Studio) |
+| `contracts/` | `HeadroomEscrow` (Foundry: `src/`, `test/`, `make escrow-test`), interface, spec, ABI |
 | `cre/` | Chainlink CRE price-baseline workflow |
 | `agent/` | demo buyer agent |
 | `dashboard/` | public dashboard |
@@ -48,9 +48,9 @@ Spend controls: `PUT /v1/budget` (daily cap, per-request max, model allowlist), 
 
 Tab mode (Arc): deposit USDC into the escrow, register a session key, send requests with `X-Headroom-Tab` (EIP-712). The signer posts a Merkle root per batch; any record can be challenged with a proof and the signed receipt; `make settle-demo` runs the whole lifecycle, `make reconcile` checks the accounting identity.
 
-## Settled transactions and Arc Studio
+## Settled transactions
 
-Every entry below is a real testnet transaction. Arc Studio URL and the CRE simulation log are added as those gates pass.
+Every entry below is a real testnet transaction. The CRE simulation log is added when that gate passes.
 
 **Hedera x402 (Spike B, 2026-11-06).** Real x402 v2 `exact` payments in HTS USDC (`0.0.429274`) from the demo agent `0.0.11334561` to the operator `0.0.11334469`, verified and settled by the Blocky402 testnet facilitator (fee payer `0.0.7162784`), with `paymentFlow: upfront`. In this spike inference came from a local fake vLLM (no GPU yet); the payment path has no mocks. Replaying a used payment returns `402 payment_replayed`.
 
@@ -65,9 +65,10 @@ Every entry below is a real testnet transaction. Arc Studio URL and the CRE simu
 
 **Demo agent, 50 unattended paid requests (P2, P3; 2026-11-06 14:17 IST).** `agent/src/agent.ts` ran 20 turns (exit 0), then 30 more before the gateway's context cap refused turn 31 with `400 context_too_long`. Every turn paid in HTS USDC through Blocky402; inference was the local fake vLLM (no GPU yet). `make audit-prices`: `sampled=50 mismatches=0`. Logs with all 50 transaction ids: `docs/evidence/2026-11-06/demo-*.jsonl`. First and last: https://hashscan.io/testnet/transaction/0.0.7162784@1793954816.086040213, https://hashscan.io/testnet/transaction/0.0.7162784@1793955006.870343589
 
-**Arc tab lifecycle on the reference escrow (S2, S3, S4, S5; 2026-11-06 14:21–14:32 IST).** `contracts/reference/HeadroomEscrow.sol` implements `contracts/IHeadroomEscrow.sol` and passes 12 Foundry tests (`make escrow-test`). It is a rehearsal contract written in this repo, not the Arc Studio submission (S1 is still open); the Studio contract replaces it by changing `ARC_ESCROW_ADDRESS`. `make settle-demo` output: `docs/evidence/2026-11-06/settle-demo-1793955725459.json`.
+**Arc escrow and tab lifecycle (S1–S5; 2026-11-06 14:21–14:32 IST).** `contracts/src/HeadroomEscrow.sol` implements `contracts/IHeadroomEscrow.sol`, passes 12 Foundry tests (`make escrow-test`) and was deployed to Arc testnet from the CLI (`signer/src/deploy-escrow.ts`); the Arc judges confirmed a CLI deploy qualifies, Arc Studio is not required. `make settle-demo` output: `docs/evidence/2026-11-06/settle-demo-1793955725459.json`.
 
 - Deploy: https://explorer.testnet.arc.io/tx/0x71180ce68fe6cfb70a78098bdfbb82add98dfa9741ad0fbedb93902ef57e54f0 (escrow `0xfa7b11252defd7ce61d271f2cbfc8eab7a5acb6f`)
+- Verified source on the explorer: https://explorer.testnet.arc.io/address/0xfa7b11252defd7ce61d271f2cbfc8eab7a5acb6f?tab=contract (Blockscout partial match: bytecode identical, metadata hash differs because the header comment and file path changed after deploy)
 - Bond: https://explorer.testnet.arc.io/tx/0x9bbd587ad57cf49071f996e24f3c9f318cf2c2b4f89664360922a0fb60b653b4
 - Deposit 2 USDC: https://explorer.testnet.arc.io/tx/0x618b126848cf44905c8ee8b5e25db943c3acb51c366cfc46bd6a8854a9f5fad0
 - Session key: https://explorer.testnet.arc.io/tx/0xf729ad5a1eac33ee5ed6cbe92d6b28c4dc8198d860e9be13c873422ef2d0d348

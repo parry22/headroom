@@ -3,11 +3,9 @@ pragma solidity ^0.8.24;
 
 import {IHeadroomEscrow} from "../IHeadroomEscrow.sol";
 
-/// Reference implementation of IHeadroomEscrow, written in this repo to rehearse the tab pipeline
-/// (signer, settle-demo, reconcile) on Arc testnet before the Arc Studio build exists.
-/// It is NOT the submission contract: track rule S1 requires the contract to be created and tested in
-/// Arc Studio from contracts/STUDIO-PROMPT.md. When the Studio contract is deployed, point
-/// ARC_ESCROW_ADDRESS at it; nothing else in the repo changes because both implement the same interface.
+/// @title HeadroomEscrow: savings-share USDC escrow for Headroom tabs (Mode B) on Arc.
+/// @notice Implements IHeadroomEscrow per contracts/ESCROW-SPEC.md. Built and tested with Foundry
+///         (`make escrow-test`) and deployed to Arc testnet from the CLI (`signer/src/deploy-escrow.ts`).
 
 interface IERC20Min {
     function transfer(address to, uint256 amount) external returns (bool);

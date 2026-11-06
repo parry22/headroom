@@ -1,6 +1,6 @@
-/** Deploy the reference escrow (contracts/reference/HeadroomEscrow.sol, built by `cd contracts && forge build`) to Arc testnet
- *  and write ARC_ESCROW_ADDRESS + ARC_ESCROW_DEPLOY_BLOCK into .env. Rehearsal only: the submission contract comes from Arc Studio.
- *  Usage: cd signer && ./node_modules/.bin/tsx src/deploy-reference.ts [--force] */
+/** Deploy the escrow (contracts/src/HeadroomEscrow.sol, built by `cd contracts && forge build`) to Arc testnet
+ *  and write ARC_ESCROW_ADDRESS + ARC_ESCROW_DEPLOY_BLOCK into .env. Constructor values: contracts/ESCROW-SPEC.md.
+ *  Usage: cd signer && ./node_modules/.bin/tsx src/deploy-escrow.ts [--force] */
 import fs from "node:fs";
 import path from "node:path";
 import type { Hex } from "viem";

@@ -40,7 +40,6 @@ If a source is missing the page shows "no data yet" (or "gateway offline"), neve
 | `TEAM_WALLETS` | empty | comma-separated buyer ids excluded from the demand section |
 | `HCS_TOPIC_ID` | empty | links HCS sequence numbers to `https://hashscan.io/testnet/topic/<id>` |
 | `ARC_ESCROW_ADDRESS` | empty | links to `https://explorer.testnet.arc.io/address/<addr>` |
-| `ARC_STUDIO_PROJECT_URL` | empty | Arc Studio project link |
 | `DASHBOARD_FIXTURES` | unset | `1` enables the sample fixtures below when the real files are missing |
 | `DASHBOARD_URL` | `http://localhost:3100` | used only by `scripts/audit-links.mjs` |
 

@@ -3,7 +3,7 @@ import { encodeAbiParameters, hashTypedData, keccak256, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
 export interface ReceiptDomain { name: "Headroom"; version: "1"; chainId?: number; verifyingContract?: Hex }
-/** The escrow verifies receipts under {name, version, chainId, verifyingContract: escrow} (contracts/STUDIO-PROMPT.md).
+/** The escrow verifies receipts under {name, version, chainId, verifyingContract: escrow} (contracts/ESCROW-SPEC.md).
  *  Pass the Arc chain id and escrow address once the escrow is deployed; without them receipts are signed under {name, version}
  *  and stay verifiable off-chain but cannot be used in an on-chain challenge. */
 export function receiptDomain(chainId?: number, verifyingContract?: string): ReceiptDomain {

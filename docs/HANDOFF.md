@@ -119,5 +119,7 @@ All on testnet; inference is still the local fake vLLM because no GPU is booked.
 - **Bugs fixed.** `settle-demo` crashed because `.env` ships `SESSION_KEY=` empty and `??` kept the empty string (now `||`). `post-batch` raised `baselineAmount` to `amount` for every batch, which would hide the S5 cap; now only the deliberately wrong demo batch does that.
 - **Config.** `TEAM_WALLETS` = agent, operator and Arc buyer, so V1/V2 now report 0 external, correctly.
 
-Still human-blocked: GPU + `HF_TOKEN` (G1, M1–M7, real-inference P4), `arc-studio login` (S1), `cre login` (CRE run), external users (V1, V2, V3).
+Still human-blocked: GPU + `HF_TOKEN` (G1, M1–M7, real-inference P4), `cre login` (CRE run), external users (V1, V2, V3).
+
+~14:45 IST: the Arc judges confirmed any CLI deploy to Arc counts; Arc Studio is not required. The escrow moved to `contracts/src/HeadroomEscrow.sol` and is the submission contract (S1 passes); `STUDIO-PROMPT.md` is now `contracts/ESCROW-SPEC.md`, `deploy-reference.ts` is `deploy-escrow.ts`. Sections 1–8 above still describe the Studio plan; this note supersedes them.
 

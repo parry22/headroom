@@ -47,6 +47,5 @@ export const cfg = {
   // arc
   arcEscrowAddress: env("ARC_ESCROW_ADDRESS", ""),
   arcChainId: num("ARC_CHAIN_ID", 5042002),
-  arcStudioUrl: env("ARC_STUDIO_PROJECT_URL", ""),
 };
 export const caip2 = `hedera:${cfg.hederaNetwork}`;

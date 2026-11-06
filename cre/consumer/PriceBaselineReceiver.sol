@@ -6,7 +6,7 @@ pragma solidity ^0.8.20;
 //////////////////////////////////////////////////////////////////////////
 
 Minimal, self-contained consumer for the Chainlink CRE `price-baseline` workflow.
-Written so a human can paste it into the Headroom escrow contract in Arc Studio:
+Reference for the CRE receiver logic; contracts/src/HeadroomEscrow.sol implements the same onReport rule:
 no external imports, no proxy, no OpenZeppelin.
 
 Data flow (see https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts):

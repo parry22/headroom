@@ -35,7 +35,6 @@ export default async function Home() {
           <a href={links.ledgerSummary}>ledger summary</a>
           {env.hcsTopicId && <a href={links.hashscanTopic(env.hcsTopicId)}>HCS topic</a>}
           {env.arcEscrowAddress && <a href={links.arcAddress(env.arcEscrowAddress)}>Arc escrow</a>}
-          {env.arcStudioUrl && <a href={env.arcStudioUrl}>Arc Studio</a>}
           {gw.health.ok ? <Tag kind="ok">gateway online</Tag> : <Tag kind="warn">gateway offline</Tag>}
         </nav>
       </header>

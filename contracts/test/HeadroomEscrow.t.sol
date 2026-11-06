@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {HeadroomEscrow} from "../reference/HeadroomEscrow.sol";
+import {HeadroomEscrow} from "../src/HeadroomEscrow.sol";
 import {IHeadroomEscrow} from "../IHeadroomEscrow.sol";
 
 /// Foundry cheatcodes, declared here so the tests need no forge-std install (offline build).

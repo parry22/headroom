@@ -13,7 +13,7 @@ export function TabSection({ ledger }: { ledger: LedgerData | null }) {
         operator share and refunds the rest.{" "}
         {env.arcEscrowAddress ? <a href={links.arcAddress(env.arcEscrowAddress)}>escrow contract</a> : <span className="muted">escrow address not configured</span>}
         {" · "}
-        {env.arcStudioUrl ? <a href={env.arcStudioUrl}>Arc Studio project</a> : <span className="muted">Studio link not configured</span>}
+        <a href={`${env.repoUrl}/blob/main/contracts/src/HeadroomEscrow.sol`}>contract source</a>
       </p>
       {!ledger ? (
         <NoData />

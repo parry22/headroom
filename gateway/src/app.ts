@@ -41,7 +41,7 @@ export function createApp(d: Deps) {
       name: "Headroom", version: "0.1", description: "Long-context inference on cheap memory, sold per token to agents.",
       endpoints: { chat: `${cfg.publicUrl}/v1/chat/completions`, models: `${cfg.publicUrl}/v1/models`, pricing: `${cfg.publicUrl}/pricing`, usage: `${cfg.publicUrl}/v1/usage`, budget: `${cfg.publicUrl}/v1/budget`, bench: `${cfg.publicUrl}/bench/latest` },
       payment: { protocol: "x402", version: 2, scheme: "exact", flow: "upfront", network: caip2, asset: cfg.hederaUsdcTokenId, asset_symbol: "USDC", payTo: cfg.hederaOperatorId, facilitator: cfg.facilitatorUrl, headers: ["PAYMENT-REQUIRED", "PAYMENT-SIGNATURE", "PAYMENT-RESPONSE"] },
-      tab: cfg.arcEscrowAddress ? { network: `eip155:${cfg.arcChainId}`, escrow: cfg.arcEscrowAddress, studio: cfg.arcStudioUrl || undefined } : undefined,
+      tab: cfg.arcEscrowAddress ? { network: `eip155:${cfg.arcChainId}`, escrow: cfg.arcEscrowAddress } : undefined,
       receipt: { type: "EIP-712", domain, signer: signer?.address ?? null, header: "X-Headroom-Receipt" },
       request_headers: { buyer: "X-Headroom-Buyer (Hedera account id, enables caps)", max_price: "X-Headroom-Max-Price (micro-USDC)", idempotency: "Idempotency-Key" },
       rates: p.rates, model: cfg.model, max_model_len: cfg.maxModelLen,

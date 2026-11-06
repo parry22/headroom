@@ -1,6 +1,6 @@
-# Arc Studio brief: HeadroomEscrow (human task 5)
+# HeadroomEscrow spec
 
-Paste this into Arc Studio (Smart Contract mode). A reference implementation that passes the test list below is in `contracts/reference/HeadroomEscrow.sol` (12 Foundry tests, deployed to Arc testnet for the pipeline rehearsal); use it only to compare behaviour, the submission contract must be created in Studio. Studio must write, test and deploy the contract; this repo only holds the interface it must satisfy (`contracts/IHeadroomEscrow.sol`) and the integration code. After deployment, run `arc-studio pull` or copy the sources, ABI and address into `contracts/` and set `ARC_ESCROW_ADDRESS` and `ARC_STUDIO_PROJECT_URL` in `.env`.
+Implemented in `contracts/src/HeadroomEscrow.sol`; tests in `contracts/test/HeadroomEscrow.t.sol` (`make escrow-test`); deployed to Arc testnet with `cd signer && ./node_modules/.bin/tsx src/deploy-escrow.ts`, which writes `ARC_ESCROW_ADDRESS` and `ARC_ESCROW_DEPLOY_BLOCK` into `.env`. Per the Arc judges, a CLI deploy to Arc qualifies; Arc Studio is not required.
 
 ---
 
@@ -25,7 +25,7 @@ Requirements:
 7. `registerSessionKey(key, expiry)`: `expiry <= block.timestamp + 7 days`. The gateway checks this mapping off-chain before serving tab requests.
 8. `setBaseline(gpuType, usdPerHourE6, timestamp)`: operator only, `timestamp > stored timestamp`, emits `BaselineSet`. `onReport(metadata, report)`: `msg.sender == forwarder`, decode `(string, uint256, uint256)` and apply the same rule. Implement Chainlink's `IReceiver` with `supportsInterface` (ERC-165) so the CRE forwarder can deliver reports.
 9. Events exactly as in the interface. Custom errors for every revert.
-10. Tests (write and run them in Studio, screenshot the passing run for the README):
+10. Tests (Foundry, `make escrow-test`):
    - deposit, postBatch, warp past the window, release: balances and `released` correct.
    - postBatch with `amount > baselineAmount` reverts (depth check S5).
    - postBatch above free balance reverts; without bond reverts.
@@ -35,6 +35,6 @@ Requirements:
    - withdraw more than free reverts; withdraw exact works.
    - setBaseline with an older timestamp reverts; onReport from a non-forwarder reverts.
    - the accounting identity holds after every step.
-11. Deploy to Arc testnet. Also build a minimal escrow console page in Studio (connect wallet, approve + deposit, withdraw, register session key, show free/locked, list batches, challenge form) so the app is connected "without leaving Studio".
+11. Deploy to Arc testnet (done 2026-11-06: `0xfa7b11252defd7ce61d271f2cbfc8eab7a5acb6f`, links in README).
 
-Deliverables to paste back into the repo: contract source, ABI JSON, deployed address, deploy tx link on https://explorer.testnet.arc.io, the shareable Studio project URL, and the test output.
+Artifacts in the repo: source (`contracts/src/`), ABI (`contracts/abi/HeadroomEscrow.json`), deployed address and transaction links (README).
