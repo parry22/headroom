@@ -1,8 +1,16 @@
 /** EIP-712 receipts and Merkle leaves. Shared by the gateway (sign) and the signer/escrow (prove). */
-import { encodeAbiParameters, keccak256, type Hex } from "viem";
+import { encodeAbiParameters, hashTypedData, keccak256, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
-export const RECEIPT_DOMAIN = { name: "Headroom", version: "1" } as const;
+export interface ReceiptDomain { name: "Headroom"; version: "1"; chainId?: number; verifyingContract?: Hex }
+/** The escrow verifies receipts under {name, version, chainId, verifyingContract: escrow} (contracts/STUDIO-PROMPT.md).
+ *  Pass the Arc chain id and escrow address once the escrow is deployed; without them receipts are signed under {name, version}
+ *  and stay verifiable off-chain but cannot be used in an on-chain challenge. */
+export function receiptDomain(chainId?: number, verifyingContract?: string): ReceiptDomain {
+  if (!verifyingContract) return { name: "Headroom", version: "1" };
+  return { name: "Headroom", version: "1", chainId: chainId ?? 5042002, verifyingContract: verifyingContract as Hex };
+}
+export const RECEIPT_DOMAIN = receiptDomain();
 export const RECEIPT_TYPES = {
   Receipt: [
     { name: "requestId", type: "bytes32" }, { name: "buyer", type: "string" },
@@ -24,14 +32,19 @@ export function leafHash(f: ReceiptFields): Hex {
      { type: "uint64" }, { type: "uint64" }, { type: "uint64" }, { type: "uint64" }, { type: "uint64" }],
     [f.requestId, f.buyer, f.promptTokens, f.cachedTokens, f.completionTokens, f.rIn, f.rCached, f.rOut, f.price, f.timestamp]));
 }
-export function receiptSigner(privateKey: string) {
+export function receiptSigner(privateKey: string, domain: ReceiptDomain = RECEIPT_DOMAIN) {
   const account = privateKeyToAccount(privateKey as Hex);
   return {
     address: account.address,
-    sign: (f: ReceiptFields) => account.signTypedData({ domain: RECEIPT_DOMAIN, types: RECEIPT_TYPES, primaryType: "Receipt", message: f }),
+    domain,
+    sign: (f: ReceiptFields) => account.signTypedData({ domain, types: RECEIPT_TYPES, primaryType: "Receipt", message: f }),
   };
 }
-export function serializeReceipt(f: ReceiptFields, signature: Hex, signer: string): string {
+/** EIP-712 digest of a receipt; must equal the escrow's receiptDigest(record) for an on-chain challenge to verify. */
+export function receiptDigest(f: ReceiptFields, domain: ReceiptDomain = RECEIPT_DOMAIN): Hex {
+  return hashTypedData({ domain, types: RECEIPT_TYPES, primaryType: "Receipt", message: f });
+}
+export function serializeReceipt(f: ReceiptFields, signature: Hex, signer: string, domain: ReceiptDomain = RECEIPT_DOMAIN): string {
   const plain = Object.fromEntries(Object.entries(f).map(([k, v]) => [k, typeof v === "bigint" ? v.toString() : v]));
-  return Buffer.from(JSON.stringify({ ...plain, leaf: leafHash(f), signature, signer, domain: RECEIPT_DOMAIN })).toString("base64");
+  return Buffer.from(JSON.stringify({ ...plain, leaf: leafHash(f), signature, signer, domain })).toString("base64");
 }

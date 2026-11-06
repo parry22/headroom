@@ -11,7 +11,7 @@ import { checkCaps } from "./caps.js";
 import { countPromptTokens, metricsSnapshot, models, proxyChat, type ChatBody } from "./vllm.js";
 import { ExpressAdapter, buildX402, type X402 } from "./x402.js";
 import { HcsLog } from "./hcs.js";
-import { leafHash, receiptSigner, requestIdHash, serializeReceipt, type ReceiptFields } from "./receipt.js";
+import { leafHash, receiptDomain, receiptSigner, requestIdHash, serializeReceipt, type ReceiptFields } from "./receipt.js";
 import { chainEscrowReader, parseTabHeader, verifyTab, type EscrowReader } from "./tab.js";
 
 export interface Deps { ledger: Ledger; pricing: PricingService; x402: X402; hcs: HcsLog; escrow: EscrowReader | null }
@@ -21,7 +21,8 @@ export function buildDeps(): Deps {
   return { ledger, pricing: new PricingService(ledger), x402: buildX402(), hcs: new HcsLog(ledger), escrow: cfg.arcEscrowAddress ? chainEscrowReader() : null };
 }
 
-const signer = cfg.receiptSigningKey ? receiptSigner(cfg.receiptSigningKey) : null;
+const domain = receiptDomain(cfg.arcChainId, cfg.arcEscrowAddress || undefined);
+const signer = cfg.receiptSigningKey ? receiptSigner(cfg.receiptSigningKey, domain) : null;
 
 export function createApp(d: Deps) {
   const app = express();
@@ -41,7 +42,7 @@ export function createApp(d: Deps) {
       endpoints: { chat: `${cfg.publicUrl}/v1/chat/completions`, models: `${cfg.publicUrl}/v1/models`, pricing: `${cfg.publicUrl}/pricing`, usage: `${cfg.publicUrl}/v1/usage`, budget: `${cfg.publicUrl}/v1/budget`, bench: `${cfg.publicUrl}/bench/latest` },
       payment: { protocol: "x402", version: 2, scheme: "exact", flow: "upfront", network: caip2, asset: cfg.hederaUsdcTokenId, asset_symbol: "USDC", payTo: cfg.hederaOperatorId, facilitator: cfg.facilitatorUrl, headers: ["PAYMENT-REQUIRED", "PAYMENT-SIGNATURE", "PAYMENT-RESPONSE"] },
       tab: cfg.arcEscrowAddress ? { network: `eip155:${cfg.arcChainId}`, escrow: cfg.arcEscrowAddress, studio: cfg.arcStudioUrl || undefined } : undefined,
-      receipt: { type: "EIP-712", domain: { name: "Headroom", version: "1" }, signer: signer?.address ?? null, header: "X-Headroom-Receipt" },
+      receipt: { type: "EIP-712", domain, signer: signer?.address ?? null, header: "X-Headroom-Receipt" },
       request_headers: { buyer: "X-Headroom-Buyer (Hedera account id, enables caps)", max_price: "X-Headroom-Max-Price (micro-USDC)", idempotency: "Idempotency-Key" },
       rates: p.rates, model: cfg.model, max_model_len: cfg.maxModelLen,
     });
@@ -146,7 +147,7 @@ async function chat(d: Deps, req: Request, res: Response): Promise<void> {
       completionTokens: BigInt(out.usage.completion_tokens), rIn: BigInt(price.rates.r_in), rCached: BigInt(price.rates.r_cached), rOut: BigInt(price.rates.r_out),
       price: BigInt(quote), timestamp: BigInt(Math.floor(Date.now() / 1000)),
     };
-    const receipt = signer ? serializeReceipt(fields, await signer.sign(fields), signer.address) : null;
+    const receipt = signer ? serializeReceipt(fields, await signer.sign(fields), signer.address, signer.domain) : null;
     d.ledger.update(requestId, {
       prompt_tokens: Number(fields.promptTokens), cached_tokens: out.usage.cached_tokens, completion_tokens: out.usage.completion_tokens,
       ttft_ms: out.ttft_ms, latency_ms: out.latency_ms, gpu_seconds: out.latency_ms / 1000,
@@ -199,7 +200,7 @@ async function tab(d: Deps, req: Request, res: Response, body: ChatBody, header:
       completionTokens: BigInt(out.usage.completion_tokens), rIn: BigInt(q.price.rates.r_in), rCached: BigInt(q.price.rates.r_cached), rOut: BigInt(q.price.rates.r_out),
       price: BigInt(price), timestamp: BigInt(Math.floor(Date.now() / 1000)),
     };
-    const receipt = signer ? serializeReceipt(fields, await signer.sign(fields), signer.address) : null;
+    const receipt = signer ? serializeReceipt(fields, await signer.sign(fields), signer.address, signer.domain) : null;
     d.ledger.update(q.requestId, {
       prompt_tokens: Number(fields.promptTokens), cached_tokens: out.usage.cached_tokens, completion_tokens: out.usage.completion_tokens, price,
       ttft_ms: out.ttft_ms, latency_ms: out.latency_ms, gpu_seconds: out.latency_ms / 1000,

@@ -13,3 +13,18 @@ describe("receipt", () => {
     expect(leafHash(f)).not.toBe(leafHash({ ...f, price: 31025n }));
   });
 });
+
+describe("receipt domain", () => {
+  it("binds to the escrow (chainId + verifyingContract) once configured, so the on-chain digest differs from the bare domain", async () => {
+    const { receiptDomain, receiptDigest } = await import("../src/receipt.js");
+    const escrow = "0x1111111111111111111111111111111111111111";
+    const f = { requestId: requestIdHash("req-2"), buyer: "0xabc", promptTokens: 1n, cachedTokens: 0n, completionTokens: 1n,
+      rIn: 1n, rCached: 1n, rOut: 1n, price: 1n, timestamp: 1n };
+    expect(receiptDomain()).toEqual({ name: "Headroom", version: "1" });
+    const d = receiptDomain(5042002, escrow);
+    expect(d).toEqual({ name: "Headroom", version: "1", chainId: 5042002, verifyingContract: escrow });
+    expect(receiptDigest(f, d)).not.toBe(receiptDigest(f));
+    const s = receiptSigner("0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d", d);
+    expect(await verifyTypedData({ address: s.address, domain: d, types: RECEIPT_TYPES, primaryType: "Receipt", message: f, signature: await s.sign(f) })).toBe(true);
+  });
+});

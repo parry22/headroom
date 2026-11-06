@@ -3,7 +3,8 @@
  *  Env: BUYER_ARC_KEY, ARC_OPERATOR_KEY, ARC_ESCROW_ADDRESS, GATEWAY_URL, SESSION_KEY (default BUYER_ARC_KEY), TAB_REQUESTS (20), DEPOSIT_USDC (2) */
 import fs from "node:fs";
 import path from "node:path";
-import { type Hex } from "viem";
+import { getAddress, type Hex } from "viem";
+import { receiptDigest, type ReceiptFields } from "../../gateway/src/receipt.js";
 import { Ledger } from "../../gateway/src/ledger.js";
 import { ESCROW, REPO_ROOT, USDC, erc20Abi, escrowAbi, explorerTx, publicClient, send, wallet } from "./escrow.js";
 import { merkleProof } from "./merkle.js";
@@ -22,6 +23,19 @@ const sessionAddr = wallet(sessionKey).account.address;
 const out: Record<string, unknown> = { escrow: ESCROW, buyer: buyer.account.address, operator: operator.account.address, steps: [] as unknown[] };
 const step = (name: string, data: unknown) => { console.log(name, JSON.stringify(data)); (out.steps as unknown[]).push({ name, ...(data as object) }); };
 const read = <T,>(fn: string, args: unknown[] = []) => publicClient.readContract({ address: ESCROW, abi: escrowAbi, functionName: fn as any, args: args as any }) as Promise<T>;
+
+// 0. pre-flight (no gas): the gateway must sign receipts under the escrow's EIP-712 domain with the signer the escrow trusts,
+//    otherwise the challenge in step 5 reverts after the deposit is already spent.
+const disc = await fetch(`${GW}/discovery.json`).then(r => r.json()).catch((e: Error) => { console.error(`gateway unreachable at ${GW}: ${e.message}`); process.exit(2); });
+const dom = disc?.receipt?.domain ?? {};
+const onchainSigner = await read<Hex>("receiptSigner");
+const problems: string[] = [];
+if (!disc?.receipt?.signer) problems.push("gateway has no RECEIPT_SIGNING_KEY");
+else if (getAddress(disc.receipt.signer) !== getAddress(onchainSigner)) problems.push(`escrow receiptSigner ${onchainSigner} != gateway signer ${disc.receipt.signer}`);
+if (!dom.verifyingContract || getAddress(dom.verifyingContract) !== getAddress(ESCROW)) problems.push(`gateway receipt domain verifyingContract ${dom.verifyingContract ?? "unset"} != ARC_ESCROW_ADDRESS ${ESCROW} (restart the gateway with ARC_ESCROW_ADDRESS set)`);
+if (Number(dom.chainId) !== CHAIN_ID) problems.push(`gateway receipt domain chainId ${dom.chainId ?? "unset"} != ${CHAIN_ID}`);
+if (problems.length) { console.error("settle-demo pre-flight failed:\n  " + problems.join("\n  ")); process.exit(2); }
+step("preflight", { receiptSigner: onchainSigner, domain: dom });
 
 // 1. operator bond
 const penalty = await read<bigint>("challengePenalty");
@@ -53,6 +67,10 @@ const rec = ledger.get(ids[0])!;
 const receipt = JSON.parse(Buffer.from(rec.receipt!, "base64").toString());
 const receiptTuple = { requestId: receipt.requestId as Hex, buyer: receipt.buyer, promptTokens: BigInt(receipt.promptTokens), cachedTokens: BigInt(receipt.cachedTokens), completionTokens: BigInt(receipt.completionTokens),
   rIn: BigInt(receipt.rIn), rCached: BigInt(receipt.rCached), rOut: BigInt(receipt.rOut), price: BigInt(receipt.price), timestamp: BigInt(receipt.timestamp) };
+const localDigest = receiptDigest(receiptTuple as ReceiptFields, receipt.domain);
+const chainDigest = await read<Hex>("receiptDigest", [receiptTuple]).catch(() => null);
+if (chainDigest && chainDigest !== localDigest) { console.error(`receipt digest mismatch: escrow ${chainDigest} vs gateway ${localDigest}; challenge would revert`); process.exit(1); }
+step("receipt_digest", { digest: localDigest, checkedOnChain: chainDigest !== null });
 const proof = merkleProof(wrong.leaves, wrong.tamperedIndex);
 const ch = await send(buyer, "challenge", [BigInt(wrong.batchId), tupleOf(wrong.fields[wrong.tamperedIndex]), proof, receiptTuple, receipt.signature]);
 step("challenge", { batchId: wrong.batchId, tx: ch.url, logs: ch.rcpt.logs.length });

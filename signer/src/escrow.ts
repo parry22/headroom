@@ -47,6 +47,7 @@ export const escrowAbi = parseAbi([
   "function baseline(string gpuType) view returns (uint256 usdPerHourE6, uint256 timestamp)",
   "function operator() view returns (address)",
   "function receiptSigner() view returns (address)",
+  `function receiptDigest(${RECORD_TUPLE} r) view returns (bytes32)`,
   "function operatorBond() view returns (uint256)",
   "function operatorBalance() view returns (uint256)",
   "function disputeWindow() view returns (uint64)",
