@@ -36,7 +36,7 @@ If a source is missing the page shows "no data yet" (or "gateway offline"), neve
 | --- | --- | --- |
 | `GATEWAY_URL` | `http://localhost:3000` | gateway base URL for `/pricing`, `/health`, `/bench/latest` |
 | `LEDGER_PATH` | `../gateway/ledger.db` | ledger SQLite file, relative to `dashboard/` |
-| `NEXT_PUBLIC_REPO_URL` | `https://github.com/parry/headroom` | base for links to `bench/results/<run>/report.md`, `turns.csv`, `metrics.csv`, `bench/results/correctness/latest.diff` |
+| `NEXT_PUBLIC_REPO_URL` | `https://github.com/parry22/headroom` | base for links to `bench/results/<run>/report.md`, `turns.csv`, `metrics.csv`, `bench/results/correctness/latest.diff` |
 | `TEAM_WALLETS` | empty | comma-separated buyer ids excluded from the demand section |
 | `HCS_TOPIC_ID` | empty | links HCS sequence numbers to `https://hashscan.io/testnet/topic/<id>` |
 | `ARC_ESCROW_ADDRESS` | empty | links to `https://explorer.testnet.arc.io/address/<addr>` |

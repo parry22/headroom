@@ -10,7 +10,7 @@ const str = (k: string, d = ""): string => {
 };
 
 export const env = {
-  repoUrl: str("NEXT_PUBLIC_REPO_URL", "https://github.com/parry/headroom").replace(/\/$/, ""),
+  repoUrl: str("NEXT_PUBLIC_REPO_URL", "https://github.com/parry22/headroom").replace(/\/$/, ""),
   gatewayUrl: str("GATEWAY_URL", "http://localhost:3000").replace(/\/$/, ""),
   ledgerPath: path.resolve(/*turbopackIgnore: true*/ process.cwd(), str("LEDGER_PATH", "../gateway/ledger.db")),
   benchLatest: path.join(REPO_ROOT, "bench", "results", "latest.json"),

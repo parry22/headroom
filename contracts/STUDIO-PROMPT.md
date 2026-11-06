@@ -9,6 +9,11 @@ Build `HeadroomEscrow`, a USDC savings-share escrow on Arc testnet for a GPU inf
 Requirements:
 1. USDC via the ERC-20 interface at `0x3600000000000000000000000000000000000000` (6 decimals). Use `transferFrom`/`transfer` only. Never `msg.value`.
 2. Constructor: `(address operator, address receiptSigner, address forwarder, uint64 disputeWindow, uint256 challengePenalty)`. For the demo: disputeWindow = 600 (10 min), challengePenalty = 100000 (0.10 USDC). Operator can update `forwarder` and `receiptSigner`.
+   Deploy with these values (Arc testnet, generated 2026-11-06 by `signer/src/gen-keys.ts`; keys are in `.env`):
+   - `operator` = `0x3F3A94169113A84fd54D257c018c62cFBc30D0EB` (`ARC_OPERATOR_KEY`, funded with 20 USDC)
+   - `receiptSigner` = `0x7D5D94E5FCCeBf920B9CAE17ef1017b5ABEc99e3` (`RECEIPT_SIGNING_KEY`)
+   - `forwarder` = `0x76c9cf548b4179F8901cda1f8623568b58215E62` (Chainlink CRE forwarder on `arc-testnet`)
+   - `disputeWindow` = `600`, `challengePenalty` = `100000`
 3. Accounting per buyer: `free`, `locked`, `deposited`, `withdrawn`, `penaltiesReceived`, `released`. Keep the identity `deposited + penaltiesReceived == released + withdrawn + free + locked` true after every state change; write a test that asserts it after every operation.
 4. `postBatch` reverts unless `amount <= baselineAmount`, `amount <= free[buyer]`, `operatorBond >= challengePenalty`. It moves `amount` from free to locked, stores the batch with `windowEnds = block.timestamp + disputeWindow`, emits `BatchPosted`.
 5. `release(batchId)`: callable by anyone after `windowEnds`, only from `Open`. Moves locked → `operatorBalance`, increments `released[buyer]`, emits `Released`.
