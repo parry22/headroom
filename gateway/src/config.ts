@@ -31,6 +31,10 @@ export const cfg = {
   m: num("MIN_MARGIN_M", 0.1),
   gpuUsdPerHr: num("GPU_USD_PER_HR", 0),
   hostUsdPerHr: num("HOST_RAM_NVME_USD_PER_HR", 0),
+  // c_b model (PRD 7.4): H200 throughput = config B throughput x KV room ratio (H200 HBM - weights) / (node HBM - weights)
+  gpuHbmGb: num("GPU_HBM_GB", 24),
+  weightsGb: num("MODEL_WEIGHTS_GB", 9.1),
+  h200HbmGb: num("H200_HBM_GB", 141),
   baselineStaleSeconds: num("BASELINE_STALE_SECONDS", 3600),
   bootstrapTokensPerHrB: num("BOOTSTRAP_TOKENS_PER_HR_B", 0),
   bootstrapTokensPerHrC: num("BOOTSTRAP_TOKENS_PER_HR_C", 0),

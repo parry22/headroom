@@ -16,7 +16,7 @@ export class PricingService {
       h200_usd_per_hr: h200?.usd_per_hr ?? null, h200_source: h200?.source ?? "none", h200_ts: h200?.ts ?? null, cre_run_id: h200?.cre_run_id ?? null,
       tokens_per_hr_b: bench.b ?? (cfg.bootstrapTokensPerHrB || null), tokens_per_hr_c: bench.c ?? (cfg.bootstrapTokensPerHrC || null),
       bench_source: bench.b ? bench.source : "bootstrap-env",
-      hbm_gb: 80, weights_gb: 16, h200_hbm_gb: 141, k: cfg.k, m: cfg.m,
+      hbm_gb: cfg.gpuHbmGb, weights_gb: cfg.weightsGb, h200_hbm_gb: cfg.h200HbmGb, k: cfg.k, m: cfg.m,
       workload: bench.workload ?? NOMINAL_WORKLOAD,
     };
     const rates = computeRates(inputs);
