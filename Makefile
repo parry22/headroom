@@ -3,7 +3,7 @@
 SHELL := /bin/bash
 PY ?= uv run --with httpx python3
 export PY
-.PHONY: gateway-test bench-test bench bench-smoke correctness audit-prices caps-test replay-test reconcile demo settle-demo help
+.PHONY: depth-check gateway-test bench-test bench bench-smoke correctness audit-prices caps-test replay-test reconcile demo settle-demo help
 
 help:
 	@grep -E '^[a-z-]+:' Makefile | cut -d: -f1 | tr '\n' ' '; echo
@@ -32,11 +32,14 @@ caps-test:      ## 3 over-cap requests refused before vLLM is called
 replay-test:    ## reused payment payload is rejected
 	cd gateway && pnpm -s replay-test
 
-reconcile:      ## released + refunded + remaining == deposited, per buyer
-	@echo "reconcile: not wired yet"; exit 1
+reconcile:      ## deposited + penalties == released + withdrawn + free + locked, per buyer, from Arc events
+	cd signer && pnpm -s reconcile
 
 demo:           ## demo buyer agent, 20 unattended paid turns on Hedera testnet
 	cd agent && pnpm -s start
 
-settle-demo:    ## Arc tab lifecycle: deposit, batch, challenge, release
-	@echo "settle-demo: not wired yet"; exit 1
+settle-demo:    ## Arc tab lifecycle: deposit, batch, challenge, release (spends testnet USDC)
+	cd signer && pnpm -s settle-demo
+
+depth-check:    ## section 8 checker; appends to docs/check-log.md
+	scripts/depth-check.sh
