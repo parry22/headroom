@@ -45,7 +45,7 @@ if [ "$CONNECTOR" = "lmcache_mp" ]; then
   KV_ARGS=(--kv-transfer-config "{\"kv_connector\":\"LMCacheMPConnector\",\"kv_role\":\"kv_both\",\"kv_connector_module_path\":\"lmcache.integration.vllm.lmcache_mp_connector\",\"kv_connector_extra_config\":{\"lmcache.mp.host\":\"tcp://localhost\",\"lmcache.mp.port\":$LMCACHE_PORT}}")
 fi
 VLLM_ARGS=("$MODEL"
-  --port "$VLLM_PORT"
+  --host "${VLLM_HOST:-127.0.0.1}" --port "$VLLM_PORT"   # localhost only: the paid gateway is the public entry
   --kv-cache-dtype "$KV_DTYPE"
   --max-model-len "$MAX_MODEL_LEN"
   --enable-prefix-caching
