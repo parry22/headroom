@@ -73,18 +73,32 @@ RESULT l1_hits=282880 l2_hits=40448 bit_exact=True -> PASS
 
 Pinned versions: `infra/VERSIONS.md`. Node bring-up and endpoints: [infra/README.md](infra/README.md).
 
-## Benchmark (smoke run, 2026-11-06 15:16 UTC, same 4090, same model, seed 1337)
+## Benchmark (1-run sweep, 2026-11-06 17:00–18:00 UTC, RTX 4090 24 GB, same model, seed 1337)
 
-`make bench-smoke` ran configs B (FP8 KV, no offload) and C (FP8 KV + LMCache DRAM/NVMe) at N = 4 and 16 agent sessions, one run each. Raw CSVs, metrics and report: `bench/results/20261106-1516-smoke/`; the gateway and dashboard read `bench/results/latest.json`.
+Configs on the same GPU and model (`RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8`): **A** 16-bit KV, no offload; **B** FP8 KV + GPU prefix cache (the tuned baseline); **C** = B + LMCache CPU DRAM (40 GB) and NVMe tiers. Workload: agent sessions with a 4K shared prefix and private context growing 8K→32K over 8 turns, 5–30 s tool gaps. Capacity = largest N with p95 TTFT on cache hits ≤ 1.5 s and zero errors. **This is one run per config, not the median of 3 the PRD bar (M2) asks for; treat the ratios as indicative.** Raw data: `bench/results/20261106-fast-smoke/` (B, C at N = 4..12; `latest.json` points here) and `bench/results/20261106-1609-full-partial/` (A at N = 4..16 from an interrupted full run; its single B row was cut by the restart and is excluded).
 
-| config | N | turns | p95 TTFT hit ms | p95 TTFT miss ms | tok/s | KV reuse | L1 hit tokens | L2 hit tokens | preemptions | GPU KV max |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| B | 4 | 38 | 954 | 835 | 5,423 | 0.84 | n/a | n/a | 0 | 45% |
-| B | 16 | 68 | 21,852 | 1,284 | 9,664 | 0.26 | n/a | n/a | 3 | 98% |
-| C | 4 | 38 | 859 | 878 | 5,402 | 0.84 | 1,220,352 | 2,048 | 0 | 49% |
-| C | 16 | 111 | 5,195 | 5,650 | 16,524 | 0.84 | 3,202,304 | 75,520 | 1 | 100% |
+| config | capacity N at the bar | p95 TTFT hit at N = 8 | tok/s at N = 8 | KV reuse at N = 8 |
+| --- | --- | --- | --- | --- |
+| A (16-bit KV) | **< 4** (fails at 4: 5.2 s) | 19.5 s | 6,339 | 0.21 |
+| B (FP8 KV) | **6** | 7.4 s | 8,277 | 0.59 |
+| C (FP8 KV + DRAM/NVMe) | **8** | 1.19 s | 10,117 | 0.86 |
 
-What this shows and does not show: at N = 16 config B runs out of HBM (KV 98%, reuse drops to 0.26, p95 TTFT 21.9 s) while config C keeps reuse at 0.84 from DRAM and NVMe and serves 1.7x the tokens per second with zero errors; but C's p95 TTFT at 16 (5.2 s) is above the 1.5 s hit target, and the smoke has no level between 4 and 16, so the capacity point is N = 4 for both and the reported gain is 1.0x. M1 (DRAM and NVMe hits above zero, GPU KV plateaus at 100%) and M6 (measured 65,520 bytes per token vs 65,536 from the formula, 0.02%) pass; M2 needs the full sweep (`make bench`, levels 2 to 32, 3 runs) which has not been run.
+Per level for B and C (from `report.md`):
+
+| config | N | p95 TTFT hit ms | tok/s | reuse | L1 hit tokens | L2 hit tokens | GPU KV max | pass |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| B | 4 | 792 | 5,359 | 0.83 | | | 69% | ✓ |
+| B | 6 | 1,298 | 7,716 | 0.81 | | | 65% | ✓ |
+| B | 8 | 7,442 | 8,277 | 0.59 | | | 94% | ✗ |
+| B | 10 | 13,825 | 9,172 | 0.52 | | | 96% | ✗ |
+| B | 12 | 14,586 | 9,368 | 0.39 | | | 99% | ✗ |
+| C | 4 | 862 | 5,229 | 0.84 | 1,222,912 | 0 | 49% | ✓ |
+| C | 6 | 1,101 | 7,762 | 0.85 | 1,815,552 | 0 | 53% | ✓ |
+| C | 8 | 1,195 | 10,117 | 0.86 | 2,287,616 | 0 | 82% | ✓ |
+| C | 10 | 1,709 | 12,072 | 0.86 | 2,516,992 | 193,024 | 100% | ✗ (just over 1.5 s) |
+| C | 12 | 2,251 | 14,043 | 0.87 | 2,475,008 | 656,128 | 99% | ✗ |
+
+What this shows: once B's GPU KV fills (N ≥ 8) its cache reuse collapses and TTFT jumps to 7–15 s, while C keeps reuse at 0.86 by reloading from DRAM and, from N = 10, NVMe, and serves up to 1.5x B's tokens per second at N = 12 with TTFT 2.3 s vs 14.6 s. Against the bars: **M2 (N_C ÷ N_B ≥ 2.0) fails at 1.33x** (8 vs 6, one run); N_C ÷ N_A ≥ 2x (8 vs < 4); M1 passes (L1 and L2 hits above zero, GPU KV at 99–100%); M6 passes (65,520 measured vs 65,536 bytes per token, 0.02%); M7: the formula predicts N_max ≈ 18 from S_HBM 5.2 and S_DRAM 16.6 sessions at measured duty cycle u = 0.28, against 8 measured, so the hit-latency bar, not memory, is the binding limit on this GPU (PCIe 3.0 host, 12 GB/s).
 
 Correctness (`make correctness`, 20 greedy prompts × 64 tokens, run 2026-11-06 16:04Z, `bench/results/correctness/`): **M5 fails.** Controls: config C on a cold prefill matches config B on a cold prefill on 20 of 20 prompts, and B's own GPU prefix-cache (warm) pass differs from its cold pass on 3 of 20. But C's output after store, evict and reload from LMCache DRAM/NVMe differs from C's own cold output on 15 of 20, some from the first tokens. So the reload path changes results beyond vLLM's normal warm/cold jitter. Spike A's three 8-token probes did match after reload. Under investigation (DRAM-only vs NVMe reload, chunk alignment); we do not claim bit-exact reload.
 
