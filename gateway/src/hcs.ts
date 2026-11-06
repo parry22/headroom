@@ -65,6 +65,19 @@ export class HcsLog {
   }
 }
 
+/** Publish one Chainlink CRE baseline snapshot to its own HCS topic (kept apart from the paid-request topic so P6 counts stay exact).
+ *  Returns the topic sequence number and a HashScan link, or null when the topic or operator is not configured. */
+export async function publishBaseline(msg: { k: "baseline"; gpu: string; e6: string; ts: number; run: string; src: string; arc_tx?: string }): Promise<{ seq: number; url: string } | null> {
+  if (!cfg.hcsBaselineTopicId || !cfg.hederaOperatorId || !cfg.hederaOperatorKey) return null;
+  const client = (cfg.hederaNetwork === "mainnet" ? Client.forMainnet() : Client.forTestnet())
+    .setOperator(AccountId.fromString(cfg.hederaOperatorId), PrivateKey.fromStringECDSA(cfg.hederaOperatorKey));
+  try {
+    const resp = await new TopicMessageSubmitTransaction().setTopicId(TopicId.fromString(cfg.hcsBaselineTopicId)).setMessage(JSON.stringify(msg)).execute(client);
+    const seq = Number((await resp.getReceipt(client)).topicSequenceNumber?.toString() ?? 0);
+    return { seq, url: `https://hashscan.io/${cfg.hederaNetwork}/topic/${cfg.hcsBaselineTopicId}/message/${seq}` };
+  } finally { client.close(); }
+}
+
 export async function mirrorTopicCount(topicId: string): Promise<number> {
   const base = cfg.hederaNetwork === "mainnet" ? "https://mainnet-public.mirrornode.hedera.com" : "https://testnet.mirrornode.hedera.com";
   const r = await fetch(`${base}/api/v1/topics/${topicId}/messages?order=desc&limit=1`);

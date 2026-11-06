@@ -41,8 +41,8 @@ export default async function Home() {
       <main>
         <MemorySection bench={bench} fixture={benchFixture} />
         <PaidSection ledger={ledger} />
-        <TabSection ledger={ledger} />
         <PricingSection pricing={gw.pricing} health={gw.health} ledger={ledger} />
+        <TabSection ledger={ledger} />
         <DemandSection ledger={ledger} />
       </main>
       <footer>

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dashboard",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd dashboard && export TEAM_WALLETS=$(grep -E '^TEAM_WALLETS=' ../.env | sed -E 's/^TEAM_WALLETS=([^ #]*).*/\\1/') ARC_ESCROW_ADDRESS=$(grep -E '^ARC_ESCROW_ADDRESS=' ../.env | sed -E 's/^ARC_ESCROW_ADDRESS=([^ #]*).*/\\1/') HCS_TOPIC_ID=$(grep -E '^HCS_TOPIC_ID=' ../.env | sed -E 's/^HCS_TOPIC_ID=([^ #]*).*/\\1/') HCS_BASELINE_TOPIC_ID=$(grep -E '^HCS_BASELINE_TOPIC_ID=' ../.env | sed -E 's/^HCS_BASELINE_TOPIC_ID=([^ #]*).*/\\1/') LEDGER_PATH=../gateway/ledger.db && exec ./node_modules/.bin/next start -p 3100"],
+      "port": 3100
+    }
+  ]
+}

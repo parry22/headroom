@@ -1,6 +1,6 @@
 import type { Fetched, Health, Pricing } from "@/lib/gateway";
 import type { LedgerData } from "@/lib/ledger";
-import { links } from "@/lib/env";
+import { env, links } from "@/lib/env";
 import { fmt, fmtInt, fmtTsAny, fmtUsdc } from "@/lib/fmt";
 import { Num, NoData, Tag } from "./Num";
 
@@ -14,7 +14,8 @@ export function PricingSection({ pricing, health, ledger }: { pricing: Fetched<P
       <p className="muted">
         The baseline is the hourly rental of a large-memory GPU, fetched by a Chainlink CRE workflow. Headroom's own cost comes from this node's
         rental divided by tokens per hour at the config C capacity point. The buyer pays cost plus a share of the gap. Live values:{" "}
-        <a href={p}>pricing JSON</a> · <a href={h}>health JSON</a>.
+        <a href={p}>pricing JSON</a> · <a href={h}>health JSON</a>
+        {env.hcsBaselineTopicId && <> · <a href={links.hashscanTopic(env.hcsBaselineTopicId)}>baseline audit log on HCS</a></>}.
       </p>
 
       {!pricing.ok ? (

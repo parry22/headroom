@@ -259,7 +259,7 @@ Buyer savings per 1M tokens = (1 − k)(c\_b − c\_a). If no H200 run is possib
 
 - **Trigger:** cron every 15 minutes, run as a CRE CLI simulation for the demo.
 - **Steps:** HTTP fetch of H100 and H200 rental prices (Vast.ai bundles API, RunPod as fallback); consensus median $/hr per GPU type; `writeReport` to `arc-testnet`, which CRE supports as a write target.
-- **Simulation caveat:** `cre workflow simulate` writes through a MockForwarder that never calls `onReport`, so for the demo the operator relays the simulated values to `setBaseline` and labels the snapshot with the `cre_run_id`. The gateway also reads `baseline("H200")` from the escrow every 60 s.
+- **Simulation caveat:** `cre workflow simulate` writes through a MockForwarder that never calls `onReport`, so for the demo the operator relays the simulated values to `setBaseline` and labels the snapshot with the `cre_run_id`. The relay also publishes each value to the HCS baseline topic (`signer/src/set-baseline.ts`). The gateway also reads `baseline("H200")` from the escrow every 60 s.
 - **Fallback:** keep the last value; after 1 hour, receipts flag it as stale.
 
 ### 7.8 Data model
@@ -369,7 +369,7 @@ You are the Headroom depth checker.
 
 ## 9. Partner track compliance
 
-The three picks are Hedera x402 ($6,500 pool, primary), Arc advanced stablecoin logic ($3,000) and Chainlink CRE ($1,500). ETHGlobal allows up to 3 partner prizes per project, and multiple tracks from one partner count as one pick ([ETHGlobal rules](https://ethglobal.com/events/mumbai/info/details)). Requirements below are from the [Mumbai prizes page](https://ethglobal.com/events/mumbai/prizes/).
+The picks are Hedera x402 ($6,500 pool, primary) and Chainlink CRE ($1,500). Arc ($3,000) is not pitched (decision 2026-11-06): Arc stays in the stack as the CRE write target, because CRE lists Arc Testnet but not Hedera as a supported network, and as the tab settlement chain; ticking it as a third prize on the form is optional and costs nothing. ETHGlobal allows up to 3 partner prizes per project, and multiple tracks from one partner count as one pick ([ETHGlobal rules](https://ethglobal.com/events/mumbai/info/details)). Requirements below are from the [Mumbai prizes page](https://ethglobal.com/events/mumbai/prizes/).
 
 **Hedera: AI Agents That Pay, x402 on Hedera**
 
@@ -379,7 +379,7 @@ The three picks are Hedera x402 ($6,500 pool, primary), Arc advanced stablecoin 
 - [ ] Demo video of 5 minutes or less showing a payment settling, linked on HashScan
 - [ ] Extra points: spending controls (F5), an HCS topic as a tamper-evident spend log (F6), settling in USDC via HTS
 
-**Arc: Best Smart Contracts with Advanced Stablecoin Logic**
+**Arc: Best Smart Contracts with Advanced Stablecoin Logic (not pitched; optional third pick)**
 
 - [x] Contract deployed to Arc testnet from the CLI (judges confirmed Studio is optional)
 - [ ] Escrow address, source link and lifecycle transactions in the submission, and the contract shown in the demo
@@ -394,11 +394,12 @@ The three picks are Hedera x402 ($6,500 pool, primary), Arc advanced stablecoin 
 - [ ] A CRE workflow built, simulated with the CRE CLI or deployed
 - [ ] It connects at least one blockchain with an external API (the GPU price source)
 - [ ] It is meaningfully used: its baseline sets c\_b in live pricing
+- [x] Each relayed baseline is also published to its own HCS topic (`HCS_BASELINE_TOPIC_ID`), so Hedera holds the audit trail of the Chainlink price
 
 **ETHGlobal rules**
 
 - [ ] Classic track: all project work began after the hackathon started; only public libraries and starter kits predate it
-- [ ] Exactly 3 partner prizes selected on the last step of the submission form
+- [ ] Partner prizes selected on the last step of the submission form: Hedera, Chainlink (Arc optional)
 - [ ] Team members made meaningful contributions; AI use is described
 - [ ] Finalist demo prepared to fit a 4-minute live presentation plus 3 minutes of questions ([format](https://hashtagweb3.com/ethglobal-mumbai))
 
@@ -430,9 +431,9 @@ The demo proves the memory claim first, then the money loop, then demand. Every 
 
 1. **0:00 to 0:30, problem.** H200 rents are up about 160% this year against about 35% for H100, and the gap is memory. Agents hold HBM hostage while they wait on tools.
 2. **0:30 to 1:15, memory proof.** Dashboard capacity curve, config B against C on the same GPU. Point at N\_C ÷ N\_B, the DRAM and NVMe hits, and the bit-exact check.
-3. **1:15 to 2:15, live paid call.** The demo agent hits the endpoint, gets a 402, pays and streams. Open the HashScan transaction and the HCS entry, then show an over-cap request refused before the GPU.
-4. **2:15 to 3:00, tab on Arc.** Deposit, batch root posted, a wrong batch challenged and refunded, a clean batch released. Show the contract source and the Arc explorer.
-5. **3:00 to 3:30, baseline.** The CRE simulation sets c\_b; a receipt shows savings against the H200-equivalent.
+3. **1:15 to 2:30, live paid call on Hedera.** The demo agent hits the endpoint, gets a 402, pays in HTS USDC and streams. Open the HashScan transaction and the HCS audit entry, then show an over-cap request refused before the GPU and a replayed payment rejected.
+4. **2:30 to 3:15, Chainlink baseline.** Run the CRE simulation live: Vast.ai fetch, consensus median, report. Show the relayed baseline on HCS and the price it sets; a receipt shows savings against the H200-equivalent.
+5. **3:15 to 3:30, trust the meter.** One slide: a wrongly priced batch challenged with a Merkle proof and refunded (tab escrow, links in README).
 6. **3:30 to 4:00, demand.** External paying teams, tokens served, two interview quotes, and the ask.
 
 The Hedera video (5 minutes max) uses the same script, with an extra minute on the payment flow and spend controls.

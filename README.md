@@ -2,9 +2,9 @@
 
 Long-context inference on cheap memory, sold per token to agents.
 
-One GPU node runs vLLM + LMCache so only hot KV cache sits in HBM; warm KV parks in CPU DRAM and cold KV on NVMe. Agents pay per request over x402 on Hedera testnet (USDC via HTS), or run a tab that settles in USDC on Arc testnet through a savings-share escrow. A Chainlink CRE workflow sets the H200-equivalent price baseline.
+One GPU node runs vLLM + LMCache so only hot KV cache sits in HBM; warm KV parks in CPU DRAM and cold KV on NVMe. Agents pay per request over x402 on Hedera testnet (USDC via HTS), with every paid request logged to a Hedera Consensus Service topic. A Chainlink CRE workflow sets the H200-equivalent price baseline, and each baseline is also logged on HCS. Long-running agents can instead run a tab that settles in USDC through a savings-share escrow on Arc testnet, the chain CRE writes to.
 
-Built at ETHGlobal Mumbai, 6 to 8 Nov 2026. Tracks: Hedera x402, Arc advanced stablecoin logic, Chainlink CRE.
+Built at ETHGlobal Mumbai, 6 to 8 Nov 2026. Tracks: Hedera x402 (primary), Chainlink CRE.
 
 ## Status
 
@@ -65,6 +65,8 @@ Every entry below is a real testnet transaction. The CRE simulation log is in `d
 
 **Demo agent, 50 unattended paid requests (P2, P3; 2026-11-06 14:17 IST).** `agent/src/agent.ts` ran 20 turns (exit 0), then 30 more before the gateway's context cap refused turn 31 with `400 context_too_long`. Every turn paid in HTS USDC through Blocky402; inference was the local fake vLLM (no GPU yet). `make audit-prices`: `sampled=50 mismatches=0`. Logs with all 50 transaction ids: `docs/evidence/2026-11-06/demo-*.jsonl`. First and last: https://hashscan.io/testnet/transaction/0.0.7162784@1793954816.086040213, https://hashscan.io/testnet/transaction/0.0.7162784@1793955006.870343589
 
+**Price baseline (D1), Chainlink CRE.** Latest run 2026-11-06 19:08: `cre-sim:ca88c9703a4b6e88`, H100 $3.4053/h, H200 $4.0022/h, relayed to Arc (https://explorer.testnet.arc.io/tx/0xaf2997edc96506783d8df256f4aad7a7589892bc8d2f3b187d68f3bc1acdb32b, https://explorer.testnet.arc.io/tx/0x0ccb5be92e19750fb4a4ff4592d508f10ebb23751ad2c762657bd214928c0501) and logged on the HCS baseline topic https://hashscan.io/testnet/topic/0.0.11339845 (messages 1 and 2). First run: `cre workflow simulate price-baseline --target staging-settings` (2026-11-06 17:44 IST): cron trigger, Vast.ai fetch on every node, consensus median H100 $3.4053/h (8 offers), H200 $3.9956/h (18 offers), dry-run `writeReport` to the escrow. The simulator uses a MockForwarder, so the operator relayed the consensus values with `setBaseline`, labelled `cre_run_id = cre-sim:22926f0036f6f2c9` (log: `docs/evidence/2026-11-06/cre-sim-1793967257.txt`): https://explorer.testnet.arc.io/tx/0xea1ba3edb1397309b071461590165aafe14de83f48cf90cc451373c612891b7c, https://explorer.testnet.arc.io/tx/0x93f325877e41fadb302f12941b2967943382ea79c515502fac16d8e7380ce784. An earlier manual relay of the same Vast.ai query (14:22 IST): https://explorer.testnet.arc.io/tx/0x91ecefa098134ed6add2d025cae75b6ead93012b9da88dd39d135c185a5638d3
+
 **Arc escrow and tab lifecycle (S1–S5; 2026-11-06 14:21–14:32 IST).** `contracts/src/HeadroomEscrow.sol` implements `contracts/IHeadroomEscrow.sol`, passes 12 Foundry tests (`make escrow-test`) and was deployed to Arc testnet from the CLI (`signer/src/deploy-escrow.ts`); the Arc judges confirmed a CLI deploy qualifies, Arc Studio is not required. `make settle-demo` output: `docs/evidence/2026-11-06/settle-demo-1793955725459.json`.
 
 - Deploy: https://explorer.testnet.arc.io/tx/0x71180ce68fe6cfb70a78098bdfbb82add98dfa9741ad0fbedb93902ef57e54f0 (escrow `0xfa7b11252defd7ce61d271f2cbfc8eab7a5acb6f`)
@@ -79,7 +81,6 @@ Every entry below is a real testnet transaction. The CRE simulation log is in `d
 - `make reconcile`: PASS, `2100000 == 2100000` (`docs/evidence/2026-11-06/reconcile-1793955730860.json`)
 - S5 on chain: `postBatch(amount=10, baselineAmount=9)` reverts with `AboveBaseline()` (`0xc88db978`)
 
-**Price baseline (D1), Chainlink CRE.** `cre workflow simulate price-baseline --target staging-settings` (2026-11-06 17:44 IST): cron trigger, Vast.ai fetch on every node, consensus median H100 $3.4053/h (8 offers), H200 $3.9956/h (18 offers), dry-run `writeReport` to the escrow. The simulator uses a MockForwarder, so the operator relayed the consensus values with `setBaseline`, labelled `cre_run_id = cre-sim:22926f0036f6f2c9` (log: `docs/evidence/2026-11-06/cre-sim-1793967257.txt`): https://explorer.testnet.arc.io/tx/0xea1ba3edb1397309b071461590165aafe14de83f48cf90cc451373c612891b7c, https://explorer.testnet.arc.io/tx/0x93f325877e41fadb302f12941b2967943382ea79c515502fac16d8e7380ce784. An earlier manual relay of the same Vast.ai query (14:22 IST): https://explorer.testnet.arc.io/tx/0x91ecefa098134ed6add2d025cae75b6ead93012b9da88dd39d135c185a5638d3
 
 **Arc testnet funding.** Operator `0x3F3A94169113A84fd54D257c018c62cFBc30D0EB` and demo buyer `0xBfa851839FDE3F1A21de800b196139337c519625`, 20 USDC each from faucet.circle.com.
 

@@ -42,6 +42,7 @@ export const cfg = {
   facilitatorUrl: env("X402_FACILITATOR_URL", "https://api.testnet.blocky402.com"),
   fallbackFacilitatorUrl: env("X402_FALLBACK_FACILITATOR_URL", ""),
   hcsTopicId: env("HCS_TOPIC_ID", ""),
+  hcsBaselineTopicId: env("HCS_BASELINE_TOPIC_ID", ""),
   // receipts
   receiptSigningKey: env("RECEIPT_SIGNING_KEY", ""),
   // arc

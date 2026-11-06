@@ -16,6 +16,7 @@ export const env = {
   benchLatest: path.join(REPO_ROOT, "bench", "results", "latest.json"),
   teamWallets: str("TEAM_WALLETS").split(",").map((s) => s.trim()).filter(Boolean),
   hcsTopicId: str("HCS_TOPIC_ID"),
+  hcsBaselineTopicId: str("HCS_BASELINE_TOPIC_ID"),
   arcEscrowAddress: str("ARC_ESCROW_ADDRESS"),
   fixtures: str("DASHBOARD_FIXTURES") === "1",
 };

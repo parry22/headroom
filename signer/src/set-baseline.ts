@@ -6,6 +6,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { Ledger } from "../../gateway/src/ledger.js";
+import { publishBaseline } from "../../gateway/src/hcs.js";
 import { ESCROW, REPO_ROOT, send, wallet } from "./escrow.js";
 
 const arg = (k: string) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : undefined; };
@@ -29,4 +30,10 @@ if (ESCROW && process.env.ARC_OPERATOR_KEY) {
 } else out.note = "ARC_ESCROW_ADDRESS/ARC_OPERATOR_KEY unset: snapshot stored locally only";
 ledger.addPriceSnapshot({ ts: Number(ts) * 1000, gpu_type: "H100", usd_per_hr: Number(h100) / 1e6, source: logPath ? "cre-sim-relay" : "manual-relay", cre_run_id: runId });
 ledger.addPriceSnapshot({ ts: Number(ts) * 1000, gpu_type: "H200", usd_per_hr: Number(h200) / 1e6, source: logPath ? "cre-sim-relay" : "manual-relay", cre_run_id: runId });
+// Hedera audit trail of the Chainlink baseline: one HCS message per GPU type on HCS_BASELINE_TOPIC_ID.
+const src = logPath ? "cre-sim-relay" : "manual-relay";
+for (const [gpu, e6, tx] of [["H100", h100, out.h100_tx], ["H200", h200, out.h200_tx]] as const) {
+  const r = await publishBaseline({ k: "baseline", gpu, e6: String(e6), ts: Number(ts), run: String(runId ?? ""), src, arc_tx: tx ? String(tx).split("/tx/")[1] : undefined }).catch((e: Error) => ({ error: e.message }));
+  out[`${gpu.toLowerCase()}_hcs`] = r ?? "HCS_BASELINE_TOPIC_ID unset";
+}
 console.log(JSON.stringify({ ...out, h100_usd_per_hr: Number(h100) / 1e6, h200_usd_per_hr: Number(h200) / 1e6 }));
