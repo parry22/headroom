@@ -11,7 +11,7 @@ export function MemorySection({ bench, fixture }: { bench: BenchData | null; fix
       <p className="muted">
         Same GPU, same model. Config B is the tuned baseline (eight-bit KV, prefix cache); config C adds LMCache DRAM and NVMe tiers.
         Capacity is the largest N whose TTFT tail stays under the bar with zero errors.
-        Tail means the ninety-fifth percentile. Config C output is bit-exact with config B on greedy prompts:{" "}
+        Tail means the ninety-fifth percentile. Greedy-output check of config C after reload against config B (M5, currently failing):{" "}
         <a href={links.correctnessDiff}>correctness diff</a>.
       </p>
       {!bench ? (

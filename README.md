@@ -9,7 +9,7 @@ Built at ETHGlobal Mumbai, 5 to 7 Nov 2026. Tracks: Hedera x402 (primary), Chain
 ## Status
 
 - Works live on testnet: x402 paid requests on Hedera (HTS USDC, Blocky402 facilitator), one HCS audit message per paid request, the Arc escrow tab lifecycle including challenge and refund, and the Chainlink CRE price baseline relayed to Arc. Transaction links are in "Settled transactions".
-- Measured: Spike A on an RTX 4090, KV reloaded from CPU DRAM and NVMe with bit-exact output. Log in "Inference node".
+- Measured: Spike A on an RTX 4090, KV reloaded from CPU DRAM and NVMe (282,880 L1 and 40,448 L2 hit tokens; 3 of 3 probes matched over 8 output tokens). Log in "Inference node". The 64-token correctness check (M5) fails; see "Benchmark".
 - Pending: the capacity bench (`make bench`), which replaces the bootstrap pricing inputs with `bench/results/latest.json`.
 
 ## Demo video
@@ -86,7 +86,7 @@ Pinned versions: `infra/VERSIONS.md`. Node bring-up and endpoints: [infra/README
 
 What this shows and does not show: at N = 16 config B runs out of HBM (KV 98%, reuse drops to 0.26, p95 TTFT 21.9 s) while config C keeps reuse at 0.84 from DRAM and NVMe and serves 1.7x the tokens per second with zero errors; but C's p95 TTFT at 16 (5.2 s) is above the 1.5 s hit target, and the smoke has no level between 4 and 16, so the capacity point is N = 4 for both and the reported gain is 1.0x. M1 (DRAM and NVMe hits above zero, GPU KV plateaus at 100%) and M6 (measured 65,520 bytes per token vs 65,536 from the formula, 0.02%) pass; M2 needs the full sweep (`make bench`, levels 2 to 32, 3 runs) which has not been run.
 
-Correctness (`make correctness`, 20 greedy prompts, `bench/results/correctness/`): config C store-then-reload is bit-exact within C (Spike A, 3 of 3 probes), but C's outputs equal B's on only 5 of 20 prompts (`latest.diff`). The PRD bar M5 (C equals B exactly) fails; the divergence comes from different batching and kernel paths between the two engine configurations, not from the offload altering KV.
+Correctness (`make correctness`, 20 greedy prompts × 64 tokens, run 2026-11-06 16:04Z, `bench/results/correctness/`): **M5 fails.** Controls: config C on a cold prefill matches config B on a cold prefill on 20 of 20 prompts, and B's own GPU prefix-cache (warm) pass differs from its cold pass on 3 of 20. But C's output after store, evict and reload from LMCache DRAM/NVMe differs from C's own cold output on 15 of 20, some from the first tokens. So the reload path changes results beyond vLLM's normal warm/cold jitter. Spike A's three 8-token probes did match after reload. Under investigation (DRAM-only vs NVMe reload, chunk alignment); we do not claim bit-exact reload.
 
 ## Layout
 
