@@ -1,19 +1,24 @@
 # Headroom make targets. The depth checker (scripts/depth-check.sh) runs the
 # first six; `demo` and `settle-demo` are run by a human because they spend testnet funds.
 SHELL := /bin/bash
-.PHONY: bench bench-smoke correctness audit-prices caps-test replay-test reconcile demo settle-demo help
+PY ?= uv run --with httpx python3
+export PY
+.PHONY: bench-test bench bench-smoke correctness audit-prices caps-test replay-test reconcile demo settle-demo help
 
 help:
 	@grep -E '^[a-z-]+:' Makefile | cut -d: -f1 | tr '\n' ' '; echo
 
-bench:          ## full run: A x1, B x3, C x3, 7 levels (~4 h)
-	@echo "bench: not wired yet (bench/run.sh full)"; exit 1
+bench:          ## full run: A x1, B x3, C x3, 7 levels (~4.5 h)
+	bench/run.sh full
 
 bench-smoke:    ## B and C, N=16 and 48, 1 run (~25 min)
-	@echo "bench-smoke: not wired yet (bench/run.sh smoke)"; exit 1
+	bench/run.sh smoke
+
+bench-test:     ## harness self-test against a fake node (unit test only)
+	bench/tests/test_harness.sh
 
 correctness:    ## 20 greedy prompts, config C output must equal config B
-	@echo "correctness: not wired yet"; exit 1
+	bench/correctness.sh
 
 audit-prices:   ## recompute 50 sampled ledger records from token counts
 	@echo "audit-prices: not wired yet"; exit 1

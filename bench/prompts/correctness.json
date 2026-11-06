@@ -1,0 +1,126 @@
+{
+ "prefix_tokens": 4096,
+ "max_tokens": 64,
+ "prompts": [
+  {
+   "id": "p00",
+   "seed": 500,
+   "tokens": 1024,
+   "question": "Summarize the above in one sentence."
+  },
+  {
+   "id": "p01",
+   "seed": 501,
+   "tokens": 2048,
+   "question": "List three tokens that appear most often."
+  },
+  {
+   "id": "p02",
+   "seed": 502,
+   "tokens": 3072,
+   "question": "What is the last word of the text?"
+  },
+  {
+   "id": "p03",
+   "seed": 503,
+   "tokens": 4096,
+   "question": "Plan the next tool call."
+  },
+  {
+   "id": "p04",
+   "seed": 504,
+   "tokens": 6144,
+   "question": "Count the occurrences of the word 'ledger'."
+  },
+  {
+   "id": "p05",
+   "seed": 505,
+   "tokens": 8192,
+   "question": "Write a title for this text."
+  },
+  {
+   "id": "p06",
+   "seed": 506,
+   "tokens": 8192,
+   "question": "Summarize the above in one sentence."
+  },
+  {
+   "id": "p07",
+   "seed": 507,
+   "tokens": 10240,
+   "question": "List three tokens that appear most often."
+  },
+  {
+   "id": "p08",
+   "seed": 508,
+   "tokens": 12288,
+   "question": "What is the last word of the text?"
+  },
+  {
+   "id": "p09",
+   "seed": 509,
+   "tokens": 14336,
+   "question": "Plan the next tool call."
+  },
+  {
+   "id": "p10",
+   "seed": 510,
+   "tokens": 16384,
+   "question": "Count the occurrences of the word 'ledger'."
+  },
+  {
+   "id": "p11",
+   "seed": 511,
+   "tokens": 16384,
+   "question": "Write a title for this text."
+  },
+  {
+   "id": "p12",
+   "seed": 512,
+   "tokens": 20480,
+   "question": "Summarize the above in one sentence."
+  },
+  {
+   "id": "p13",
+   "seed": 513,
+   "tokens": 24576,
+   "question": "List three tokens that appear most often."
+  },
+  {
+   "id": "p14",
+   "seed": 514,
+   "tokens": 28672,
+   "question": "What is the last word of the text?"
+  },
+  {
+   "id": "p15",
+   "seed": 515,
+   "tokens": 32768,
+   "question": "Plan the next tool call."
+  },
+  {
+   "id": "p16",
+   "seed": null,
+   "tokens": 0,
+   "question": "Explain why KV cache size grows with context length."
+  },
+  {
+   "id": "p17",
+   "seed": null,
+   "tokens": 0,
+   "question": "Write a Python function that computes a Merkle root over a list of byte strings."
+  },
+  {
+   "id": "p18",
+   "seed": null,
+   "tokens": 0,
+   "question": "Describe the x402 payment flow in five steps."
+  },
+  {
+   "id": "p19",
+   "seed": null,
+   "tokens": 0,
+   "question": "What does a dispute window protect against in an escrow contract?"
+  }
+ ]
+}
