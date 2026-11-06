@@ -29,7 +29,7 @@ export function createApp(d: Deps) {
   app.use(express.json({ limit: "32mb" }));
   app.disable("x-powered-by");
 
-  app.get("/health", (_req, res) => { res.json({ ok: true, model: cfg.model, hcs: d.hcs.enabled(), hcs_pending: d.hcs.pending(), ts: Date.now() }); });
+  app.get("/health", (_req, res) => { res.json({ ok: true, model: cfg.model, hcs: d.hcs.enabled(), hcs_pending: d.hcs.pending(), hcs_unsent: d.hcs.enabled() ? d.hcs.unsent() : null, ts: Date.now() }); });
   app.get("/v1/models", async (_req, res) => {
     try { const m = await models(); res.json({ ...m, headroom: { max_model_len: cfg.maxModelLen, max_output_tokens: cfg.maxOutputTokens } }); }
     catch (e) { res.status(502).json({ error: "vllm_unreachable", message: (e as Error).message }); }

@@ -2,10 +2,10 @@
 
 Each unblocks a spike. Agent work continues in parallel on gateway, bench, signer, CRE.
 
-**Status 2026-11-06 ~11:45 IST.** Repo is public at https://github.com/parry22/headroom (branch `main`). Already done by the agent: Arc keys generated into `.env` (`RECEIPT_SIGNING_KEY` `0x7D5D…99e3`, `ARC_OPERATOR_KEY` `0x3F3A…D0EB`, `BUYER_ARC_KEY` `0xBfa8…9625`; print them with `cd signer && pnpm -s exec tsx src/gen-keys.ts --addresses`), operator and buyer each funded with 20 Arc testnet USDC, Studio constructor values written into `contracts/STUDIO-PROMPT.md`. Hedera agent `0.0.11334561` holds 20 USDC; both Hedera accounts are USDC-associated (task 4 is done except the keys).
+**Status 2026-11-06 ~11:45 IST.** Repo is public at https://github.com/parry22/headroom (branch `main`). Already done by the agent: Arc keys generated into `.env` (`RECEIPT_SIGNING_KEY` `0x9ED0…19d6`, `ARC_OPERATOR_KEY` `0x3F3A…D0EB`, `BUYER_ARC_KEY` `0xBfa8…9625`; print them with `cd signer && pnpm -s exec tsx src/gen-keys.ts --addresses`), operator and buyer each funded with 20 Arc testnet USDC, Studio constructor values written into `contracts/STUDIO-PROMPT.md`. Hedera agent `0.0.11334561` holds 20 USDC; both Hedera accounts are USDC-associated (task 4 is done except the keys).
 
 What is left for the human, shortest first:
-- Paste `HEDERA_OPERATOR_KEY` and `AGENT_HEDERA_KEY` into `.env` (portal.hedera.com, "HEX Encoded Private Key"). Then the agent runs Spike B.
+- ~~Hedera keys~~ done; Spike B passed 2026-11-06 12:20 (P1, P5, P6; links in README). HCS topic `0.0.11335247`.
 - `npm install -g @circle-fin/arc-studio-cli@1.2.2 && arc-studio login` (browser authorize). Then the agent drives Arc Studio from the CLI (`arc-studio run --file contracts/IHeadroomEscrow.sol ...`), deploys, and pulls the sources back. You still check the shareable project URL logged out.
 - `cre login` (browser). Then the agent runs the simulation.
 - Tasks 1–3 (GPU, HF token, node).

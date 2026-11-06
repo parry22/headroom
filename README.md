@@ -50,7 +50,20 @@ Tab mode (Arc): deposit USDC into the escrow, register a session key, send reque
 
 ## Settled transactions and Arc Studio
 
-Filled in by the human as gates pass (HashScan links, Arc explorer links, Studio project URL, CRE simulation log).
+Every entry below is a real testnet transaction. Arc Studio URL and the CRE simulation log are added as those gates pass.
+
+**Hedera x402 (Spike B, 2026-11-06).** Real x402 v2 `exact` payments in HTS USDC (`0.0.429274`) from the demo agent `0.0.11334561` to the operator `0.0.11334469`, verified and settled by the Blocky402 testnet facilitator (fee payer `0.0.7162784`), with `paymentFlow: upfront`. In this spike inference came from a local fake vLLM (no GPU yet); the payment path has no mocks. Replaying a used payment returns `402 payment_replayed`.
+
+- https://hashscan.io/testnet/transaction/0.0.7162784@1793945676.464874990 (first settlement: 5 micro-USDC agent to operator)
+- https://hashscan.io/testnet/transaction/0.0.7162784@1793945730.865773365
+- https://hashscan.io/testnet/transaction/0.0.7162784@1793945757.475561626
+- https://hashscan.io/testnet/transaction/0.0.7162784@1793945812.185413823
+- https://hashscan.io/testnet/transaction/0.0.7162784@1793945878.139851347
+- https://hashscan.io/testnet/transaction/0.0.7162784@1793946015.228065975
+
+**HCS audit topic.** https://hashscan.io/testnet/topic/0.0.11335247: one message per paid request. After the spike runs: 6 paid records, 6 topic messages.
+
+**Arc testnet funding.** Operator `0x3F3A94169113A84fd54D257c018c62cFBc30D0EB` and demo buyer `0xBfa851839FDE3F1A21de800b196139337c519625`, 20 USDC each from faucet.circle.com.
 
 ## AI use
 
