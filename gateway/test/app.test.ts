@@ -1,5 +1,5 @@
 /** Gateway flow test with a fake facilitator and fake vLLM. Fakes are for tests only; the demo path never uses them. */
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import http from "node:http";
 import type { AddressInfo } from "node:net";
 
@@ -132,5 +132,43 @@ describe("gateway", () => {
     expect(p.rates.uncached_input).toBeGreaterThan(0); expect(p.baseline.stale).toBe(false); expect(p.c_b_modelled).toBe(true);
     const d = await (await fetch(`${base}/discovery.json`)).json();
     expect(d.payment.network).toBe("hedera:testnet"); expect(d.receipt.signer).toMatch(/^0x/);
+  });
+});
+
+describe("gateway with the facilitator down", () => {
+  // Fresh module graph: config reads X402_FACILITATOR_URL at import time, so point it at a port that refuses connections.
+  let down: string;
+  beforeAll(async () => {
+    vi.resetModules();
+    process.env.X402_FACILITATOR_URL = "http://127.0.0.1:1";
+    process.env.X402_FALLBACK_FACILITATOR_URL = "";
+    const { Ledger } = await import("../src/ledger.js");
+    const { PricingService } = await import("../src/pricingService.js");
+    const { buildX402 } = await import("../src/x402.js");
+    const { HcsLog } = await import("../src/hcs.js");
+    const { createApp, syncFacilitator } = await import("../src/app.js");
+    const ledger = new Ledger(":memory:");
+    ledger.addPriceSnapshot({ ts: Date.now(), gpu_type: "H200", usd_per_hr: 3.9, source: "test" });
+    const d = { ledger, pricing: new PricingService(ledger), x402: buildX402(), hcs: new HcsLog(ledger), escrow: null };
+    d.pricing.refresh();
+    expect(await syncFacilitator(d)).toBe(false);   // boot-time sync fails, must not throw
+    const srv = await new Promise<http.Server>(r => { const s = createApp(d).listen(0, "127.0.0.1", () => r(s)); });
+    down = `http://127.0.0.1:${(srv.address() as AddressInfo).port}`;
+  });
+  it("answers 502 facilitator_unavailable instead of crashing, and keeps /health alive", async () => {
+    const post = (headers: Record<string, string> = {}) =>
+      fetch(`${down}/v1/chat/completions`, { method: "POST", headers: { "content-type": "application/json", ...headers }, body: JSON.stringify({ messages: msgs, max_tokens: 5 }) });
+    const inferenceBefore = vllmCalls;
+    const unpaid = await post();
+    expect(unpaid.status).toBe(502);
+    expect((await unpaid.json()).error).toBe("facilitator_unavailable");
+    const sig = Buffer.from(JSON.stringify({ x402Version: 2, payload: { transaction: "x" } })).toString("base64");
+    const paid = await post({ "payment-signature": sig });
+    expect(paid.status).not.toBe(200);
+    expect(paid.headers.get("content-type")).toContain("application/json");
+    expect((await paid.json()).error).toBe("facilitator_unavailable");
+    const h = await fetch(`${down}/health`);
+    expect(h.status).toBe(200); expect((await h.json()).ok).toBe(true);
+    expect(vllmCalls).toBe(inferenceBefore);   // no inference without settlement
   });
 });

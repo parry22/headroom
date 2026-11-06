@@ -69,8 +69,28 @@ export function createApp(d: Deps) {
     res.json(d.ledger.getBudget(buyer) ?? { buyer, daily_cap: null, max_price_per_request: null, allowlist: [], session_keys: [] });
   });
 
-  app.post("/v1/chat/completions", (req, res) => { void chat(d, req, res); });
+  app.post("/v1/chat/completions", (req, res) => {
+    // Any throw on the request path (facilitator down, settle failure, bad vLLM reply) must answer the
+    // request, never escape as an unhandled rejection that takes the whole gateway down.
+    chat(d, req, res).catch((e: unknown) => {
+      const message = e instanceof Error ? e.message : String(e);
+      console.warn("chat request failed:", message);
+      if (res.headersSent) { res.end(); return; }
+      res.status(502).json({ error: FACILITATOR_ERROR.test(message) ? "facilitator_unavailable" : "gateway_error", message });
+    });
+  });
   return app;
+}
+
+const FACILITATOR_ERROR = /facilitator|fetch failed|ECONNREFUSED|ENOTFOUND|ETIMEDOUT/i;
+
+/** Facilitator readiness. x402's initialize() clears its supported-kinds maps before refetching, so it is only
+ *  re-run while the server is not ready yet; a failure is logged once per attempt and reported as false. */
+const facilitatorReady = new WeakSet<X402>();
+export async function syncFacilitator(d: Pick<Deps, "x402">): Promise<boolean> {
+  if (facilitatorReady.has(d.x402)) return true;
+  try { await d.x402.http.initialize(); facilitatorReady.add(d.x402); return true; }
+  catch (e) { console.warn("facilitator sync failed:", (e as Error).message); return false; }
 }
 
 /** Mode A request: caps -> quote -> 402 or verify+settle (upfront) -> stream -> finalize record -> HCS. */
@@ -96,6 +116,8 @@ async function chat(d: Deps, req: Request, res: Response): Promise<void> {
   if (tabHeader) { await tab(d, req, res, body, tabHeader, { requestId, promptTokens, maxTokens, quote, price }); return; }
 
   // 2. x402: no header -> 402 with PAYMENT-REQUIRED; header -> verify, then settle before the handler (upfront flow).
+  // Lazy retry of the boot-time facilitator sync; checked before the replay mark so a signed payload is not burned on a 502.
+  if (!(await syncFacilitator(d))) { res.status(502).json({ error: "facilitator_unavailable", message: `facilitator ${cfg.facilitatorUrl} unreachable; retrying`, request_id: requestId }); return; }
   const adapter = new ExpressAdapter(req);
   adapter.quoteMicro = quote;
   const ctx = { adapter, path: req.path, method: req.method, paymentHeader: adapter.getHeader("payment-signature") };

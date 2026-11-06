@@ -1,10 +1,14 @@
 import { cfg } from "./config.js";
-import { buildDeps, createApp } from "./app.js";
+import { buildDeps, createApp, syncFacilitator } from "./app.js";
 import { startBaselineSync } from "./baselineSync.js";
 
 const deps = buildDeps();
 deps.pricing.refresh();
-await deps.x402.http.initialize().catch(e => console.warn("facilitator sync at start failed (will retry per request):", (e as Error).message));
+if (!(await syncFacilitator(deps))) {
+  console.warn("facilitator sync at start failed; retrying every 15 s and on the next chat request");
+  const retry = setInterval(async () => { if (await syncFacilitator(deps)) { console.log("facilitator sync ok"); clearInterval(retry); } }, 15_000);
+  retry.unref();
+}
 const requeued = deps.hcs.backfill();
 if (requeued) console.log(`hcs: re-queued ${requeued} finished records without a topic sequence number`);
 const app = createApp(deps);
