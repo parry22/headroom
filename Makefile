@@ -36,7 +36,7 @@ reconcile:      ## released + refunded + remaining == deposited, per buyer
 	@echo "reconcile: not wired yet"; exit 1
 
 demo:           ## demo buyer agent, 20 unattended paid turns on Hedera testnet
-	@echo "demo: not wired yet"; exit 1
+	cd agent && pnpm -s start
 
 settle-demo:    ## Arc tab lifecycle: deposit, batch, challenge, release
 	@echo "settle-demo: not wired yet"; exit 1

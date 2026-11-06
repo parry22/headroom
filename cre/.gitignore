@@ -4,4 +4,4 @@
 node_modules/
 dist/
 *.wasm
-bun.lock
+.cre_build_tmp.js
