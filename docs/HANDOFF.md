@@ -71,7 +71,7 @@ It starts a fake vLLM (spike only), the real gateway against Blocky402, makes on
 2. Payment flow is `upfront`: settle before the handler, stream after. The stock `@x402/express` middleware buffers responses, so `gateway/src/app.ts` drives `x402HTTPResourceServer.processHTTPRequest` directly.
 3. CRE writes to Arc directly; the "mirror chain" fallback is dropped; the MockForwarder caveat is handled by the operator relay labelled with `cre_run_id`.
 4. Escrow accounting identity for `make reconcile`: `deposited + penaltiesReceived == released + withdrawn + free + locked` per buyer (a successful challenge refunds the **whole batch** plus a fixed penalty from the operator bond).
-5. Receipt leaf: `keccak256(abi.encode(requestId, buyer, promptTokens, cachedTokens, completionTokens, rIn, rCached, rOut, price, timestamp))`, EIP-712 domain `{name:"Headroom", version:"1"}` (gateway receipts have no chainId; the contract adds chainId + verifyingContract per `STUDIO-PROMPT.md`, so **the gateway receipt domain must be aligned with the deployed contract before `settle-demo`**: set chainId/verifyingContract in `gateway/src/receipt.ts` `RECEIPT_DOMAIN` once the address is known). This is a known open item.
+5. Receipt leaf: `keccak256(abi.encode(requestId, buyer, promptTokens, cachedTokens, completionTokens, rIn, rCached, rOut, price, timestamp))`, EIP-712 domain `{name:"Headroom", version:"1", chainId, verifyingContract}` matching `STUDIO-PROMPT.md`. **Resolved 2026-11-06:** the gateway derives the domain from `ARC_CHAIN_ID` + `ARC_ESCROW_ADDRESS` (`receiptDomain()` in `gateway/src/receipt.ts`), publishes it in `/discovery.json`, and `settle-demo` refuses to spend gas unless the gateway domain and signer match the escrow (`receiptSigner()`), then checks the escrow's `receiptDigest` equals the local digest before challenging. Restart the gateway after setting `ARC_ESCROW_ADDRESS`; receipts signed before that cannot be challenged on-chain.
 6. Pricing: integer rates in micro-USD per 1M tokens; quote `q = ceil((r_in·prompt + r_out·max_tokens)/1e6)`; Mode B charges usage price with the 0.25 cached discount. Gateway refuses to start without throughput for B and C: set `BOOTSTRAP_TOKENS_PER_HR_B/C` in `.env` until `bench/results/latest.json` exists.
 7. Caps identify the buyer by the `X-Headroom-Buyer` header on the unpaid request (the paid retry uses the facilitator's `payer`). The demo agent sends it.
 8. Bench timing: A ×1, B ×3, C ×3, 7 levels, ≈ 4.5 h; smoke B, C at N = 16, 48 ≈ 25 min. Warm-up 2 min per config excluded, 1 min settle + 4 min measured per level.
@@ -83,7 +83,7 @@ It starts a fake vLLM (spike only), the real gateway against Blocky402, makes on
 2. **Spike A**: book 1× H100 80 GB (≥ 256 GB host RAM, ≥ 1 TB NVMe, Docker + NVIDIA runtime), clone repo, fill `.env` (`HF_TOKEN`, `LMCACHE_L1_GB` ≈ 80 % of host RAM, `LMCACHE_L2_PATH` on NVMe, `GPU_USD_PER_HR`), run `infra/run-node.sh C && python3 infra/tierhit_smoke.py --fillers 80`, then `infra/engine-info.sh`. If the `lmcache` CLI is missing from the image, use `lmcache/standalone:<same tag>` for the server container. If FP8 + offload fails bit-exactness, report before changing configs.
 3. `bench/run.sh smoke` → `bench/results/latest.json` (M1, M4, M5 evidence; also gives throughput for pricing). Then start `bench/run.sh full` (≈ 4.5 h) while payments are integrated; the GPU is busy during the full run.
 4. Gateway on the node against real vLLM + Blocky402: `cd gateway && pnpm start`; `make demo` (20 unattended paid turns); `make caps-test`, `make replay-test`, `make audit-prices`; create the HCS topic. Post `/discovery.json` in the ETHGlobal Discord and at the Hedera booth as soon as 20 paid requests exist (V1 needs 5 external wallets).
-5. **Spike C / Arc**: human builds `HeadroomEscrow` in Arc Studio from `contracts/STUDIO-PROMPT.md`, deploys, exports address + ABI into `contracts/`, sets `ARC_ESCROW_ADDRESS`, `ARC_STUDIO_PROJECT_URL`, `ARC_ESCROW_DEPLOY_BLOCK`, `ARC_OPERATOR_KEY`, `BUYER_ARC_KEY`, funds both with Arc USDC. Align `RECEIPT_DOMAIN` (item 6.5). Then `make settle-demo` (≈ 12 min, spends testnet USDC) and `make reconcile`.
+5. **Spike C / Arc**: human builds `HeadroomEscrow` in Arc Studio from `contracts/STUDIO-PROMPT.md`, deploys, exports address + ABI into `contracts/`, sets `ARC_ESCROW_ADDRESS`, `ARC_STUDIO_PROJECT_URL`, `ARC_ESCROW_DEPLOY_BLOCK`, `ARC_OPERATOR_KEY`, `BUYER_ARC_KEY`, funds both with Arc USDC. Restart the gateway so receipts use the escrow domain (item 6.5). Then `make settle-demo` (≈ 12 min, spends testnet USDC) and `make reconcile`.
 6. **Spike D**: `cd cre && cre login`, `cre workflow simulate price-baseline --target staging-settings`, save the log, relay with `set-baseline.ts`.
 7. Dashboard on the node (`cd dashboard && pnpm build && pnpm start`), `node dashboard/scripts/audit-links.mjs`, `scripts/depth-check.sh` every 3 h (cron), README links, `docs/ai-disclosure.md` update with the new model name, video, submit by Sun 08:00 IST.
 
@@ -91,10 +91,14 @@ Cut order if behind (hours before deadline): H-30 no GPU → 48 GB fallback at 1
 
 ## 8. Known gaps and risks
 
-- `RECEIPT_DOMAIN` chainId/verifyingContract alignment (item 6.5) before any on-chain challenge.
-- `infra/run-node.sh` assumes `lmcache` is on PATH inside `lmcache/vllm-openai:v0.5.6`; unverified.
-- `countPromptTokens` uses vLLM `POST /tokenize` with `messages`; response field `count` assumed; falls back to a chars/3 estimate flagged `tokens_estimated`.
-- `bench/report.py` M6 parses vLLM log lines `Available KV cache memory: X GiB` and `GPU KV cache size: N tokens`; regexes may need a tweak for the actual vLLM version.
+- Resolved 2026-11-06 by reading source (see `infra/VERSIONS.md`): `lmcache` is on PATH in the image and every `run-node.sh` flag exists at v0.5.6; vLLM `/tokenize` returns `count`; the M6 log lines match `infra/engine-info.sh`. Still re-check against the vLLM version inside the image after Spike A.
+- Escrow must expose `receiptDigest(Record)` (in `IHeadroomEscrow.sol`); if Studio omits it, `settle-demo` skips the on-chain digest check but still runs the signer/domain pre-flight.
 - Dashboard untested against a real ledger and real bench output.
 - Circle faucet delay/failure on Hedera; one request per 2 h.
 - Solo human time: Studio contract (≈ 3 h) is the longest human task; start it before H-18.
+
+## 9. Session 2 update (2026-11-06 ~11:15 IST, Claude Opus 5.5)
+
+State re-checked: every secret in `.env` is still empty (`HEDERA_OPERATOR_KEY`, `AGENT_HEDERA_KEY`, `RECEIPT_SIGNING_KEY`, `ARC_OPERATOR_KEY`, `BUYER_ARC_KEY`, `HF_TOKEN`). `hedera-check` shows both accounts at 1000 HBAR, **0 USDC, USDC not associated**: the Circle faucet claim never arrived. All four spikes remain human-blocked; section 7 order is unchanged.
+
+Done this session: receipt domain alignment (item 6.5) plus settle-demo pre-flight; source checks closing three risks in section 8; PRD sections 7.5–7.7 and section 12 synced with the design decisions in section 6; AI disclosure names both models.

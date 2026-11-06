@@ -228,11 +228,11 @@ Buyer savings per 1M tokens = (1 − k)(c\_b − c\_a). If no H200 run is possib
 
 ### 7.5 x402 gateway
 
-1. Tokenize the prompt, check the caps, compute q.
+1. Tokenize the prompt, check the caps, compute q. Caps identify the buyer by the `X-Headroom-Buyer` header on the unpaid request; the paid retry uses the facilitator's `payer`.
 2. No payment header: return 402 with payment requirements (network Hedera testnet, asset USDC on HTS, pay-to operator account, amount q, resource, 60 s expiry).
-3. Retry with `X-PAYMENT`: verify and settle through a facilitator listed in the [Hedera x402 docs](https://docs.hedera.com/solutions/ai/x402/facilitators); store the transaction ID.
+3. Retry with `PAYMENT-SIGNATURE` (x402 v2; v1 called it `X-PAYMENT`): verify and settle through a facilitator listed in the [Hedera x402 docs](https://docs.hedera.com/solutions/ai/x402/facilitators); store the transaction ID. The flow is `upfront`: settlement completes before the handler runs, and `PAYMENT-RESPONSE` is sent before the first streamed token.
 4. Forward to vLLM and stream the response.
-5. Finalize the meter record; return `X-PAYMENT-RESPONSE` and a signed `X-Headroom-Receipt`.
+5. Finalize the meter record; return a signed `X-Headroom-Receipt` (also the final SSE event `headroom_receipt`).
 6. Queue the HCS audit message.
 
 **Guards.** Caps checked before quoting, so the GPU is never called for a request that will be refused. Seen-payment set for replay protection. Idempotency keys on retries. Per-wallet rate limits. **Mode B** requests carry an EIP-712 signature from a session key registered on the Arc escrow; the gateway checks free balance ≥ outstanding usage + q.
@@ -250,14 +250,16 @@ Buyer savings per 1M tokens = (1 − k)(c\_b − c\_a). If no H200 run is possib
 | setBaseline(gpuType, usdPerHourE6, timestamp) | CRE forwarder or operator | Stores the price baseline | Newer timestamp than the stored value |
 
 - **Leaf:** keccak256 over requestId, buyer, prompt, cached and completion tokens, unit prices, price and timestamp. The receipt is the gateway's EIP-712 signature over the same fields.
-- **Successful challenge:** refunds the overcharge plus a fixed penalty from the operator bond.
+- **Receipt domain:** EIP-712 `{name: "Headroom", version: "1", chainId, verifyingContract: escrow}`. The gateway signs under this domain whenever `ARC_ESCROW_ADDRESS` is set and publishes it in `/discovery.json`.
+- **Successful challenge:** refunds the whole batch plus a fixed penalty from the operator bond. The per-buyer accounting identity checked by `make reconcile` (S4) is therefore `deposited + penaltiesReceived = released + withdrawn + free + locked`.
 - **Window:** 10 minutes on testnet for the demo, 24 hours in production.
 - **Units:** USDC with 6 decimals throughout. Events: Deposited, BatchPosted, Challenged, Released, Refunded, Withdrawn, BaselineSet.
 
 ### 7.7 CRE price baseline
 
 - **Trigger:** cron every 15 minutes, run as a CRE CLI simulation for the demo.
-- **Steps:** HTTP fetch of H100 and H200 rental prices from a public source; take the median $/hr per GPU type; EVM write to setBaseline.
+- **Steps:** HTTP fetch of H100 and H200 rental prices (Vast.ai bundles API, RunPod as fallback); consensus median $/hr per GPU type; `writeReport` to `arc-testnet`, which CRE supports as a write target.
+- **Simulation caveat:** `cre workflow simulate` writes through a MockForwarder that never calls `onReport`, so for the demo the operator relays the simulated values to `setBaseline` and labels the snapshot with the `cre_run_id`. The gateway also reads `baseline("H200")` from the escrow every 60 s.
 - **Fallback:** keep the last value; after 1 hour, receipts flag it as stale.
 
 ### 7.8 Data model
@@ -468,7 +470,7 @@ The biggest risk is a gain under 2x, because it removes the reason to exist; the
 | vLLM and LMCache version mismatch | Medium | Lost hours | Pin versions in one Docker image; use only the documented connector |
 | Chosen facilitator cannot settle USDC on HTS, or goes down | Low to medium | Blocks P1 | Integrate two listed facilitators; HBAR fallback, labelled in receipts |
 | Other teams lack testnet USDC | High | Slows V1 | Faucet links and a one-line top-up script in the README; tiny prices |
-| CRE cannot write to Arc testnet | Unknown | Weakens the Chainlink pick | Write the baseline to a supported testnet and mirror it into Arc, labelled |
+| CRE simulation does not reach Arc (MockForwarder) | Certain in simulation | Baseline not on-chain from CRE itself | Arc testnet is a supported CRE target; for the demo, operator relays the simulated values on-chain labelled with `cre_run_id` |
 | Judges read it as an LMCache wrapper | Medium | Lower scores | Lead with measured gain, attribution, memory math, pricing and settlement |
 | Host DRAM prices keep rising | Medium | Smaller margin later | Host RAM and NVMe are inside c\_a; push cold KV to NVMe |
 | Cross-tenant timing leak via shared prefixes | Low | Trust damage | Per-buyer cache salt (7.10) |
@@ -477,9 +479,9 @@ The biggest risk is a gain under 2x, because it removes the reason to exist; the
 **Open questions.**
 
 - [ ] Which provider has an 80 GB GPU with at least 256 GB host RAM on demand right now?
-- [ ] Does CRE support Arc testnet as a write target?
-- [ ] Which listed Hedera facilitator settles USDC via HTS on testnet today?
-- [ ] Which public source gives H100 and H200 rental prices for the CRE workflow?
+- [x] Does CRE support Arc testnet as a write target? Yes, `arc-testnet`; simulation uses a MockForwarder (7.7).
+- [ ] Which listed Hedera facilitator settles USDC via HTS on testnet today? Blocky402, x402.org and Launa all list `hedera:testnet`; HTS USDC settlement is proven only by Spike B.
+- [x] Which public source gives H100 and H200 rental prices for the CRE workflow? Vast.ai bundles API (keyless), RunPod GraphQL as fallback.
 - [ ] Operator share k: test 0.2, 0.3 and 0.5 in interviews.
 - [ ] Team roles, and who owns the depth-check agent.
 
